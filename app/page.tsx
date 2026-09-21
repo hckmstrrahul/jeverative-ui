@@ -1,10 +1,9 @@
 'use client';
-import { GenerationActivity } from '@/components/generation-activity';
 import { StreamPreview } from '@/lib/tree/preview';
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@/components/ui/native-select';
+  readLocalConnection,
+  writeLocalConnection,
+} from '@/lib/local-connection';
 import { readLines } from '@/lib/tree/stream';
 import { validateDocument } from '@/lib/tree/spec';
 import { documentScreen } from '@/lib/tree/screen';
@@ -13,8 +12,6 @@ import type { TextUsage } from '@/lib/tree/usage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUp,
-  ChevronRight,
-  Command,
   KeyRound,
   Monitor,
   RotateCcw,
@@ -53,7 +50,7 @@ import {
   waitForPlacement,
 } from '@/lib/placement';
 import { catalog, initialScreen, type Screen } from '@/lib/catalog';
-import { MODEL, validateScreen, type Answers } from '@/lib/decisions';
+import { validateScreen, type Answers } from '@/lib/decisions';
 type Result = {
   screen: Screen;
   answers?: Answers;
@@ -140,8 +137,6 @@ export default function Home() {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [draft, setDraft] = useState<Screen | null>(null);
   const [streamStatus, setStreamStatus] = useState('');
-  const [livePlan, setLivePlan] = useState<Result['plan']>();
-  const [liveCount, setLiveCount] = useState(0);
   const [completedMetrics, setCompletedMetrics] = useState<Result['metrics']>();
   const [engine, setEngine] = useState<'hybrid' | 'llm' | 'jev' | 'jev-first'>(
     'jev-first',
@@ -155,7 +150,11 @@ export default function Home() {
   const [settings, setSettings] = useState(false);
   const [key, setKey] = useState('');
   const [keyDraft, setKeyDraft] = useState('');
+  const [rememberKey, setRememberKey] = useState(false);
+  const [savedKey, setSavedKey] = useState(false);
+  const [connectionError, setConnectionError] = useState('');
   const [serverKey, setServerKey] = useState(false);
+  const [keySource, setKeySource] = useState<'server' | 'manual'>('server');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [placed, setPlaced] = useState<string[] | null>(null);
@@ -170,8 +169,22 @@ export default function Home() {
   const controller = useRef<AbortController | null>(null);
   const sequence = useRef(0);
   const current = useRef(screen);
-  const live = Boolean(key || serverKey);
+  const useServerKey = serverKey && keySource === 'server';
+  const live = useServerKey || Boolean(key);
   useEffect(() => {
+    void Promise.resolve().then(() => {
+      try {
+        const saved = readLocalConnection(window.localStorage);
+        if (saved) {
+          setKey(saved.key);
+          setKeySource(saved.source);
+          setRememberKey(true);
+          setSavedKey(true);
+        }
+      } catch {
+        /* Storage can be disabled by the browser. Session entry still works. */
+      }
+    });
     fetch('/api/connection')
       .then((r) => r.json())
       .then((d) =>
@@ -217,8 +230,6 @@ export default function Home() {
       // Keep the visible draft when a new request supersedes an in-flight request.
       setStreamStatus('');
       setHasLivePreview(false);
-      setLivePlan(undefined);
-      setLiveCount(0);
       setBusy(true);
       setPlaced(null);
       setPlacement(null);
@@ -231,7 +242,8 @@ export default function Home() {
             signal: abort.signal,
             body: JSON.stringify({
               prompt: value,
-              apiKey: key || undefined,
+              apiKey: useServerKey ? undefined : key || undefined,
+              keySource: useServerKey ? 'server' : 'manual',
               model: textModel,
               engine,
               autoRepair,
@@ -256,10 +268,8 @@ export default function Home() {
             if (event.type === 'status') {
               setStreamStatus(event.message);
             }
-            if (event.type === 'plan') setLivePlan(event.plan);
             if (event.type === 'preview') {
               const document = validateDocument(event.document, false);
-              setLiveCount(document.nodes.length);
               const visible = preview.push(document);
               if (visible) {
                 setDraft(documentScreen(visible, current.current));
@@ -298,7 +308,8 @@ export default function Home() {
             body: JSON.stringify({
               prompt: value,
               current: { ...current.current, document: undefined },
-              ...(key ? { apiKey: key } : {}),
+              apiKey: useServerKey ? undefined : key || undefined,
+              keySource: useServerKey ? 'server' : 'manual',
             }),
             signal: abort.signal,
           });
@@ -368,7 +379,7 @@ export default function Home() {
         }
       }
     },
-    [live, key, apply, engine, textModel, autoRepair],
+    [live, key, useServerKey, apply, engine, textModel, autoRepair],
   );
   useEffect(() => {
     const context = (
@@ -457,8 +468,6 @@ export default function Home() {
     setSeen(initialScreen.components);
     setInspecting(null);
 
-    setLivePlan(undefined);
-    setLiveCount(0);
     setError('');
     setPrompt('');
 
@@ -469,18 +478,6 @@ export default function Home() {
     <TooltipProvider>
       <Toaster>
         <main className="workspace">
-          <header className="workspace-header">
-            <div className="studio-brand">
-              <span className="brand-mark">
-                <Command size={17} />
-              </span>
-              <strong>jeverative</strong>
-            </div>
-            <Button variant="outline" onClick={() => setSettings(true)}>
-              {live ? <KeyRound /> : <Settings2 />}
-              {live ? 'OpenRouter connected' : 'Connect OpenRouter'}
-            </Button>
-          </header>
           <section className="studio">
             <div className="studio-heading">
               <div>
@@ -495,19 +492,25 @@ export default function Home() {
                   >
                     @hckmstrrahul
                   </a>
+                  <span aria-hidden="true"> • </span>
+                  <a
+                    href="https://github.com/hckmstrrahul/jeverative-ui"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-4 hover:text-foreground"
+                  >
+                    Github
+                  </a>
                 </p>
               </div>
-              <GenerationActivity
-                busy={busy}
-                live={live}
-                engine={engine}
-                status={streamStatus}
-                plan={livePlan}
-                count={busy ? liveCount : (screen.document?.nodes.length ?? 0)}
-                error={Boolean(error)}
-                completed={Boolean(lastPrompt)}
-                metrics={completedMetrics}
-              />
+              <Button
+                className="studio-connect"
+                variant="outline"
+                onClick={() => setSettings(true)}
+              >
+                {live ? <KeyRound /> : <Settings2 />}
+                {live ? 'OpenRouter connected' : 'Connect OpenRouter'}
+              </Button>
             </div>
             {error && (
               <div role="alert" className="error-banner">
@@ -673,6 +676,9 @@ export default function Home() {
               ) : (
                 <CompositionCanvas
                   hidden={false}
+                  generationMs={
+                    !busy && !draft ? completedMetrics?.totalMs : undefined
+                  }
                   screen={draft ?? screen}
                   composing={busy || Boolean(draft)}
                   generationStatus={
@@ -704,191 +710,245 @@ export default function Home() {
             </div>
           </section>
         </main>
-        <Dialog open={settings} onOpenChange={setSettings}>
-          <DialogContent className="sm:max-w-md p-6">
-            <div className="connection-icon">
-              <KeyRound size={20} />
-            </div>
-            <DialogTitle>Connect OpenRouter</DialogTitle>
-            <DialogDescription>
-              Choose how your interface is composed.
+        <Dialog
+          open={settings}
+          onOpenChange={(open) => {
+            setSettings(open);
+            if (!open) {
+              setKeyDraft('');
+              setConnectionError('');
+            }
+          }}
+        >
+          <DialogContent className="connection-dialog sm:max-w-[480px]">
+            <DialogTitle className="connection-title">
+              Connect OpenRouter
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Choose a connection and composition engine.
             </DialogDescription>
-            <div className="space-y-2 my-2">
-              <Label htmlFor="openrouter-key">API key</Label>
-              <Input
-                id="openrouter-key"
-                type="password"
-                value={keyDraft}
-                onChange={(e) => setKeyDraft(e.target.value)}
-                placeholder={
-                  key ? 'Key connected for this session' : 'sk-or-v1-…'
-                }
-                autoComplete="off"
-              />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Kept in memory for this session. Sent through our server to
-                OpenRouter. Never written to browser storage.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="composition-engine">Composition engine</Label>
-              <NativeSelect
-                id="composition-engine"
-                value={engine}
-                onChange={(e) => {
-                  cancel();
-
-                  setEngine(
-                    e.target.value as 'hybrid' | 'llm' | 'jev' | 'jev-first',
-                  );
-                }}
-              >
-                <NativeSelectOption value="jev-first">
-                  Jev-first · element composition
-                </NativeSelectOption>
-                <NativeSelectOption value="hybrid">
-                  Jev-directed · adaptive UI
-                </NativeSelectOption>
-                <NativeSelectOption value="llm">
-                  LLM only · local layout rules
-                </NativeSelectOption>
-                <NativeSelectOption value="jev">
-                  Jev · prepared recipes
-                </NativeSelectOption>
-              </NativeSelect>
-              {engine === 'jev-first' && (
-                <p className="text-xs text-muted-foreground">
-                  Jev selects and arranges prepared Mint elements in up to two
-                  calls. Sample content; no text-model call. Unsupported
-                  requests are reported explicitly.
-                </p>
-              )}
-              {(engine === 'hybrid' || engine === 'llm') && (
-                <>
-                  <div className="flex items-center justify-between gap-4">
-                    <Label htmlFor="auto-repair">Auto-fix invalid output</Label>
-                    <Switch
-                      id="auto-repair"
-                      checked={autoRepair}
-                      onCheckedChange={(value) => {
+            <fieldset className="connection-section">
+              <legend>Connection</legend>
+              <div className="connection-choices">
+                {[
+                  { id: 'server', label: 'Default key' },
+                  { id: 'manual', label: 'My key' },
+                ].map((option) => (
+                  <label
+                    key={option.id}
+                    className="connection-choice"
+                    data-disabled={
+                      (option.id === 'server' && !serverKey) || undefined
+                    }
+                  >
+                    <input
+                      type="radio"
+                      name="key-source"
+                      value={option.id}
+                      checked={
+                        (useServerKey ? 'server' : 'manual') === option.id
+                      }
+                      disabled={option.id === 'server' && !serverKey}
+                      onChange={() => {
                         cancel();
-
-                        setAutoRepair(value);
+                        setKeySource(option.id as 'server' | 'manual');
+                        setConnectionError('');
                       }}
                     />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    One text-model retry if validation fails. Off: faster, but
-                    the preview may be unfinished.
-                  </p>
-                  <Label htmlFor="model-preset">Text model</Label>
-                  <NativeSelect
-                    id="model-preset"
-                    value={
-                      TEXT_MODELS.some((m) => m.id === textModel)
-                        ? textModel
-                        : 'custom'
-                    }
-                    onChange={(e) => {
-                      cancel();
-
-                      setTextModel(
-                        e.target.value === 'custom' ? '' : e.target.value,
-                      );
-                    }}
-                  >
-                    {TEXT_MODELS.map((m) => (
-                      <NativeSelectOption key={m.id} value={m.id}>
-                        {m.name}
-                      </NativeSelectOption>
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {!useServerKey && (
+              <div className="connection-key">
+                <Label htmlFor="openrouter-key">API key</Label>
+                <Input
+                  id="openrouter-key"
+                  type="password"
+                  value={keyDraft}
+                  onChange={(e) => {
+                    setKeyDraft(e.target.value);
+                    setConnectionError('');
+                  }}
+                  placeholder={
+                    key ? 'Key connected · paste to replace' : 'sk-or-v1-…'
+                  }
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <div className="connection-row">
+                  <Label htmlFor="remember-key">Save on this device</Label>
+                  <Switch
+                    id="remember-key"
+                    checked={rememberKey}
+                    onCheckedChange={setRememberKey}
+                  />
+                </div>
+              </div>
+            )}
+            {key && (
+              <Button
+                className="connection-delete"
+                variant="ghost"
+                onClick={() => {
+                  try {
+                    if (savedKey)
+                      writeLocalConnection(window.localStorage, null);
+                  } catch {
+                    setConnectionError(
+                      'Could not delete the saved key. Allow browser storage and retry.',
+                    );
+                    return;
+                  }
+                  cancel();
+                  setKey('');
+                  setKeyDraft('');
+                  setRememberKey(false);
+                  setSavedKey(false);
+                  setKeySource(serverKey ? 'server' : 'manual');
+                  setConnectionError('');
+                }}
+              >
+                Delete my key
+              </Button>
+            )}
+            <fieldset className="connection-section">
+              <legend>Composition</legend>
+              <div className="connection-choices">
+                {[
+                  { id: 'jev-first', label: 'Jev-first' },
+                  { id: 'hybrid', label: 'Adaptive' },
+                ].map((option) => (
+                  <label key={option.id} className="connection-choice">
+                    <input
+                      type="radio"
+                      name="composition-engine"
+                      value={option.id}
+                      checked={engine === option.id}
+                      onChange={() => {
+                        cancel();
+                        setEngine(option.id as 'jev-first' | 'hybrid');
+                      }}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {engine === 'hybrid' && (
+              <>
+                <fieldset className="connection-section">
+                  <legend>Text model</legend>
+                  <div className="connection-choices connection-model-choices">
+                    {[
+                      ...TEXT_MODELS.map((m) => ({
+                        id: m.id,
+                        label: m.name.split(' · ')[0],
+                      })),
+                      { id: 'custom', label: 'Custom' },
+                    ].map((option) => (
+                      <label key={option.id} className="connection-choice">
+                        <input
+                          type="radio"
+                          name="text-model-preset"
+                          checked={
+                            option.id === 'custom'
+                              ? !TEXT_MODELS.some((m) => m.id === textModel)
+                              : textModel === option.id
+                          }
+                          onChange={() => {
+                            cancel();
+                            setTextModel(
+                              option.id === 'custom' ? '' : option.id,
+                            );
+                          }}
+                        />
+                        <span>{option.label}</span>
+                      </label>
                     ))}
-                    <NativeSelectOption value="custom">
-                      Custom OpenRouter model
-                    </NativeSelectOption>
-                  </NativeSelect>
-                  <p className="text-xs text-muted-foreground">
-                    {TEXT_MODELS.find((m) => m.id === textModel)?.note ??
-                      'Enter a model ID below. Custom model settings use provider defaults.'}
-                  </p>
-                  {TEXT_MODELS.find((m) => m.id === textModel) && (
-                    <p className="text-xs text-muted-foreground">
-                      Listed ${' '}
-                      {TEXT_MODELS.find((m) => m.id === textModel)!.input} input
-                      / $ {TEXT_MODELS.find((m) => m.id === textModel)!.output}{' '}
-                      output per 1M tokens · 21 Sep 2026. Provider/context tiers
-                      vary.
-                    </p>
-                  )}
-                  <Label htmlFor="text-model">OpenRouter model ID</Label>
+                  </div>
+                </fieldset>
+                {!TEXT_MODELS.some((m) => m.id === textModel) && (
                   <Input
-                    id="text-model"
+                    aria-label="Custom model ID"
+                    placeholder="provider/model-id"
                     value={textModel}
                     onChange={(e) => {
                       cancel();
-
                       setTextModel(e.target.value);
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {engine === 'llm'
-                      ? 'Generates content and structure with local validation. No Jev call.'
-                      : 'Jev chooses the layout; the text model fills it with content. Both use OpenRouter credits.'}
-                  </p>
-                </>
-              )}
-            </div>
-            {engine !== 'llm' && (
-              <div className="connection-model">
-                <span>Decision model</span>
-                <code>{MODEL}</code>
-              </div>
+                )}
+                <div className="connection-row">
+                  <Label htmlFor="auto-repair">Auto-fix invalid output</Label>
+                  <Switch
+                    id="auto-repair"
+                    checked={autoRepair}
+                    onCheckedChange={(value) => {
+                      cancel();
+                      setAutoRepair(value);
+                    }}
+                  />
+                </div>
+              </>
             )}
-
-            <div className="flex justify-between gap-3 pt-3">
-              {key ? (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    cancel();
-                    setKey('');
-                    setKeyDraft('');
-
-                    setSettings(false);
-                  }}
-                >
-                  Disconnect
-                </Button>
-              ) : (
-                <Button variant="ghost" onClick={() => setSettings(false)}>
-                  Keep exploring
-                </Button>
-              )}
-              <Button
-                disabled={!keyDraft.trim() && !key && !serverKey}
-                onClick={() => {
-                  cancel();
-                  if (keyDraft.trim()) setKey(keyDraft.trim());
-                  setKeyDraft('');
-
-                  setSettings(false);
-                  setError('');
-                }}
-              >
-                {key || serverKey ? 'Done' : 'Connect'}
-                <ArrowUpRightIcon />
-              </Button>
-            </div>
-            {serverKey && (
-              <p className="text-xs text-muted-foreground">
-                A server key is also configured.
+            {connectionError && (
+              <p className="connection-error" role="alert">
+                {connectionError}
               </p>
             )}
+            <Button
+              className="connection-primary"
+              disabled={
+                (!useServerKey && !keyDraft.trim() && !key) ||
+                (engine === 'hybrid' && !textModel.trim())
+              }
+              onClick={() => {
+                const manualKey = useServerKey ? key : keyDraft.trim() || key;
+                if (
+                  !useServerKey &&
+                  (manualKey.length > 512 || /[\r\n]/.test(manualKey))
+                ) {
+                  setConnectionError('Enter a valid API key.');
+                  return;
+                }
+                try {
+                  if (rememberKey || savedKey)
+                    writeLocalConnection(
+                      window.localStorage,
+                      rememberKey && manualKey
+                        ? {
+                            key: manualKey,
+                            source: useServerKey ? 'server' : 'manual',
+                          }
+                        : null,
+                    );
+                } catch {
+                  setConnectionError(
+                    'Browser storage is unavailable. Enable it to save or delete a key.',
+                  );
+                  return;
+                }
+                cancel();
+                setSavedKey(Boolean(rememberKey && manualKey));
+                setKey(manualKey);
+                setKeySource(useServerKey ? 'server' : 'manual');
+                setKeyDraft('');
+                setSettings(false);
+                setConnectionError('');
+                setError('');
+              }}
+            >
+              {useServerKey
+                ? 'Use default key'
+                : rememberKey
+                  ? 'Save & connect'
+                  : 'Connect'}
+            </Button>
           </DialogContent>
         </Dialog>
       </Toaster>
     </TooltipProvider>
   );
-}
-function ArrowUpRightIcon() {
-  return <ChevronRight size={14} />;
 }

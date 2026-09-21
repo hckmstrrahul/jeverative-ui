@@ -666,3 +666,7 @@ console.log(
 await import('./tree-contracts');
 
 await import("./jev-first-contracts");
+
+import "./server-key-contracts";
+
+import "./local-connection-contracts";

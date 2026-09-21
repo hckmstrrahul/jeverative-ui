@@ -32,7 +32,7 @@ Run a paid comparison with your own key:
 BENCHMARK_ENGINES=jev-first,hybrid BENCHMARK_REPEATS=1 npm run benchmark
 ```
 
-The CLI asks for a key privately. Jev-first reports total/first-content time, number of Jev calls and available Jev usage. Missing provider usage stays unknown; partial costs are not a full bill. The activity widget displays completed server-side duration and call count. Network and rendering add to perceived duration.
+The CLI asks for a key privately. Jev-first reports total/first-content time, number of Jev calls and available Jev usage. Missing provider usage stays unknown; partial costs are not a full bill. The preview corner displays completed server-side duration; benchmark output retains call counts. Network and rendering add to perceived duration.
 
 Local live smoke tests on 2026-09-21 succeeded for a desktop profile, desktop sales dashboard and mobile settings. Initial measured dashboard/settings completions were 1.58s/1.43s, each with two Jev calls and zero text calls. These historical timings precede the single-presentation update. These few prepared-content tests are not a controlled quality or latency comparison against Hybrid. Visual review prompted metric grouping and wide-content placement fixes. A subsequent live variation completed in 1.83s, retained dashboard content and rendered the summary metrics together. These times are server-reported completion durations.
 

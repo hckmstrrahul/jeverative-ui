@@ -1,3 +1,4 @@
+import { resolveOpenRouterKey } from '@/lib/server/openrouter-key';
 import { jevFirstResponse } from '@/lib/jev-first/response';
 import { systemMessage, textModelOptions } from '@/lib/tree/models';
 import { summarizeTextUsage } from '@/lib/tree/usage';
@@ -60,10 +61,7 @@ export async function POST(request: Request) {
       { error: 'Use a prompt between 1 and 2,000 characters.' },
       { status: 400, headers },
     );
-  const key =
-    typeof body.apiKey === 'string' && body.apiKey.trim()
-      ? body.apiKey.trim()
-      : process.env.OPENROUTER_API_KEY;
+  const key = resolveOpenRouterKey(body.apiKey, body.keySource);
   if (!key)
     return Response.json(
       { error: 'Connect OpenRouter to generate a UI.' },

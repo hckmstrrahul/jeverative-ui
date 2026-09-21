@@ -98,6 +98,26 @@ export function buildCandidates(
       ['verified', 'badge', { text: 'Verified', variant: 'outline' }],
     ],
   );
+  const identity = out.find((c) => c.id === 'identity')!;
+  if (!identity.nodes.some((n) => n.id === 'jf_identity_details')) {
+    const byId = new Map(identity.nodes.map((n) => [n.id, n]));
+    identity.nodes = [
+      byId.get('jf_identity')!,
+      byId.get('jf_identity_avatar')!,
+      node('jf_identity_details', 'jf_identity', 'stack', {
+        direction: 'column',
+        gap: 4,
+      }),
+      node('jf_identity_heading', 'jf_identity_details', 'stack', {
+        direction: 'row',
+        gap: 8,
+        align: 'center',
+      }),
+      { ...byId.get('jf_identity_name')!, parent: 'jf_identity_heading' },
+      { ...byId.get('jf_identity_verified')!, parent: 'jf_identity_heading' },
+      { ...byId.get('jf_identity_role')!, parent: 'jf_identity_details' },
+    ];
+  }
   add('bio', 'Profile biography: sample user introduction.', 'text', {
     text: 'Building thoughtful products and investing for the long term.',
     tone: 'secondary',
@@ -657,6 +677,64 @@ export function buildCandidates(
     );
   // Generic search and domain-specific search are alternatives, not peers.
   out.find((c) => c.id === 'stay_search')!.resource = 'search';
+  add(
+    'social_navigation',
+    'Section navigation for a social feed, community, activity or microblogging app. Local selected-section state.',
+    'sidebar',
+    {
+      label: 'Community',
+      bind: 'jf_social_section',
+      options: ['Home', 'Following', 'Bookmarks', 'Messages'],
+      value: 'Home',
+    },
+  );
+  add(
+    'post_composer',
+    'Compose and publish a local text post in a social feed or community. Supports Twitter/X-style home screens.',
+    'post-composer',
+    {
+      label: 'Share an update',
+      author: 'You',
+      placeholder: 'What’s happening?',
+    },
+  );
+  for (const [id, author, handle, body, time] of [
+    [
+      'design',
+      'Maya Rao',
+      '@mayarao',
+      'Small details make a big difference. Today I simplified a flow from five steps to two. What did you improve this week?',
+      '12 min',
+    ],
+    [
+      'community',
+      'Aarav Mehta',
+      '@aarav',
+      'Sharing a few sketches from our community workshop. The best ideas came from asking better questions.',
+      '38 min',
+    ],
+    [
+      'product',
+      'Neha Shah',
+      '@nehashah',
+      'Just shipped our new workspace. Clear navigation, fewer distractions and room for the work that matters.',
+      '1 hr',
+    ],
+  ] as const)
+    add(
+      `feed_${id}`,
+      `Reusable social feed item: ${body} Suitable for timelines, communities and activity feeds.`,
+      'feed-item',
+      { author, handle, body, time },
+    );
+  add(
+    'inbox_pane',
+    'Interactive messages inbox sidebar with two selectable conversations and local replies. Can sit beside any feed, dashboard or workspace in a resizable layout.',
+    'inbox-pane',
+    { title: 'Inbox' },
+    [],
+    'inbox',
+  );
   const copyPrompt = prompt
     .replace(/```[\s\S]*?```/g, '')
     .replace(

@@ -1,4 +1,5 @@
 'use client';
+import { FeedItem, PostComposer, InboxPane } from './social-primitives';
 import { ListingCard } from './listing-card';
 import { Fragment, useState, type ReactNode } from 'react';
 import type { UINode, Value } from '@/lib/tree/spec';
@@ -244,7 +245,22 @@ export function TreeExtended({
           {children.map((child, i) => (
             <Fragment key={childIds[i]}>
               {i > 0 && <ResizableHandle withHandle />}
-              <ResizablePanel minSize="15%">
+              <ResizablePanel
+                minSize={
+                  p.preset === 'workspace'
+                    ? children.length === 3 && i === 0
+                      ? '14%'
+                      : '22%'
+                    : '15%'
+                }
+                defaultSize={
+                  p.preset === 'workspace'
+                    ? children.length === 3
+                      ? ['18%', '52%', '30%'][i]
+                      : ['65%', '35%'][i]
+                    : undefined
+                }
+              >
                 <div className="p-4">{child}</div>
               </ResizablePanel>
             </Fragment>
@@ -974,6 +990,25 @@ export function TreeExtended({
           </QuestionnaireSubmit>
         </Questionnaire>
       );
+    case 'feed-item':
+      return (
+        <FeedItem
+          author={text('author')}
+          handle={text('handle')}
+          body={text('body')}
+          time={text('time', 'Now')}
+        />
+      );
+    case 'post-composer':
+      return (
+        <PostComposer
+          label={text('label')}
+          author={text('author')}
+          placeholder={text('placeholder', "What's happening?")}
+        />
+      );
+    case 'inbox-pane':
+      return <InboxPane title={text('title')} />;
     case 'listing-card':
       return (
         <ListingCard

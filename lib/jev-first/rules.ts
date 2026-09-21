@@ -41,6 +41,11 @@ export function sensibleLayout(
     layout === 'main-left'
   )
     return 'main-right';
+  if (
+    selected.some((c) => c.id === 'inbox_pane') &&
+    selected.some((c) => c.nodes[0].kind === 'feed-item')
+  )
+    return layout === 'resizable' ? 'resizable' : 'main-left';
   const dense = selected.some((c) =>
     ['chart', 'table', 'data-table'].includes(c.nodes[0].kind),
   );
@@ -149,6 +154,37 @@ export function constrainPlacement(
         out[`order_${id}`] = String(i);
       }
     out.group_a = 'stack';
+  }
+  const feed = selected.filter(
+    (c) => c.nodes[0].kind === 'feed-item' || c.id === 'post_composer',
+  );
+  if (feed.length) {
+    const split = layout === 'resizable' || layout === 'three-column';
+    const main = split && available.has('social_navigation') ? 'b' : 'a';
+    for (const c of feed) {
+      out[`parent_${c.id}`] = main;
+      out[`order_${c.id}`] =
+        c.id === 'post_composer'
+          ? '0'
+          : String(10 + Number(out[`order_${c.id}`] ?? 0));
+    }
+    out[`group_${main}`] = 'stack';
+    if (available.has('social_navigation')) {
+      out.parent_social_navigation = 'a';
+      out.order_social_navigation = '-1';
+      out.group_a = 'stack';
+    }
+    if (available.has('inbox_pane')) {
+      out.parent_inbox_pane =
+        split && available.has('social_navigation') ? 'c' : 'b';
+      out.order_inbox_pane = '0';
+      out[`group_${out.parent_inbox_pane}`] = 'stack';
+    }
+  } else if (available.has('inbox_pane') && layout === 'resizable') {
+    for (const c of selected)
+      out[`parent_${c.id}`] = c.id === 'inbox_pane' ? 'b' : 'a';
+    out.group_a = 'stack';
+    out.group_b = 'stack';
   }
   return out;
 }

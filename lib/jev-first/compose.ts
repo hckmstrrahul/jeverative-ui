@@ -60,6 +60,7 @@ const choice = (
 const titles: Record<string, string> = {
   profile: 'Profile',
   stays: 'Find your next stay',
+  feed: 'Home feed',
   custom: 'Your workspace',
   settings: 'Account settings',
   sales: 'Sales overview',
@@ -128,22 +129,31 @@ function assemble(
         ? 1
         : layout === 'three-column'
           ? 3
-          : 2,
+          : layout === 'resizable'
+            ? 3
+            : 2,
     );
     nodes.push({
       id: 'jf_body',
       parent: 'jf_page',
-      kind: 'grid',
-      props: {
-        columns,
-        gap: 16,
-        ratio:
-          columns > 1 && layout === 'main-left'
-            ? 'main-left'
-            : columns > 1 && layout === 'main-right'
-              ? 'main-right'
-              : 'equal',
-      },
+      kind: layout === 'resizable' && occupied > 1 ? 'resizable' : 'grid',
+      props:
+        layout === 'resizable' && occupied > 1
+          ? {
+              label: 'Resizable workspace',
+              direction: 'horizontal',
+              preset: 'workspace',
+            }
+          : {
+              columns,
+              gap: 16,
+              ratio:
+                columns > 1 && layout === 'main-left'
+                  ? 'main-left'
+                  : columns > 1 && layout === 'main-right'
+                    ? 'main-right'
+                    : 'equal',
+            },
     });
     // Groups are ordered and acyclic by construction; candidates cannot target arbitrary nodes.
     const groups = ['a', 'b', 'c'].filter((g) =>
@@ -293,6 +303,8 @@ export async function* composeJevFirst(
           stacked: 'Full-width vertical groups',
         }
       : {
+          resizable:
+            'Resizable workspace with content and an inbox sidebar; supports optional navigation pane',
           reading: 'Focused form/profile reading width',
           stacked: 'Wide vertical sections',
           'main-left': 'Wide primary group left, compact secondary right',
@@ -404,6 +416,12 @@ export async function* composeJevFirst(
     throw new Error(
       'Jev selected too much content. Request a focused screen with fewer sections.',
     );
+  if (
+    /\bresiz(?:able|e)\b/i.test(prompt) &&
+    device !== 'mobile' &&
+    selected.length > 1
+  )
+    chosen.layout = 'resizable';
   chosen.layout = sensibleLayout(selected, chosen.layout, device);
   const theme = chosen.theme as UIDocument['theme'];
   const quotedTitle = prompt.match(
@@ -448,7 +466,7 @@ export async function* composeJevFirst(
     }
     const maxGroups = ['reading'].includes(chosen.layout)
       ? ['a']
-      : chosen.layout === 'three-column'
+      : ['three-column', 'resizable'].includes(chosen.layout)
         ? ['a', 'b', 'c']
         : ['a', 'b'];
     for (const c of selected) {

@@ -17,6 +17,7 @@ type Props = {
   screen: Screen;
   composing?: boolean;
   generationStatus?: string;
+  generationMs?: number;
   awaitingContent?: boolean;
   unfinished?: boolean;
   onRestore?: () => void;
@@ -35,6 +36,7 @@ export function CompositionCanvas({
   screen,
   composing = false,
   generationStatus,
+  generationMs,
   awaitingContent = false,
   unfinished = false,
   onRestore,
@@ -237,7 +239,19 @@ export function CompositionCanvas({
               <span>
                 {inspecting ? 'components / ' + inspecting : '/preview'}
               </span>
-              <Box size={13} />
+              {!composing &&
+              !unfinished &&
+              !inspecting &&
+              generationMs !== undefined ? (
+                <output
+                  className="preview-generation-time"
+                  aria-label={`Generated in ${(generationMs / 1000).toFixed(2)} seconds`}
+                >
+                  {(generationMs / 1000).toFixed(2)}s
+                </output>
+              ) : (
+                <Box size={13} />
+              )}
             </div>
             {generationStatus || unfinished ? (
               <output

@@ -1,3 +1,4 @@
+import { resolveOpenRouterKey } from '@/lib/server/openrouter-key';
 import { blueprintCandidates, getBlueprint } from '@/lib/ui-grammar';
 import {
   buildQuestions,
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       { error: 'Invalid request.' },
       { status: 400, headers },
     );
-  const { prompt, apiKey } = body;
+  const { prompt } = body;
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 2000)
     return Response.json(
       { error: 'Use a prompt between 1 and 2,000 characters.' },
@@ -55,10 +56,7 @@ export async function POST(request: Request) {
       { status: 400, headers },
     );
   }
-  const key =
-    typeof apiKey === 'string' && apiKey.trim()
-      ? apiKey.trim()
-      : process.env.OPENROUTER_API_KEY;
+  const key = resolveOpenRouterKey(body.apiKey, body.keySource);
   if (!key)
     return Response.json(
       { error: 'Connect OpenRouter to use Jev.' },

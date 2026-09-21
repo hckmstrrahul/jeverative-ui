@@ -19,6 +19,21 @@ const input = {
   required: 'boolean',
 } as const;
 export const extendedDefinitions = {
+  'feed-item': definition(
+    'Reusable social/activity post with author, handle, timestamp, body, local like and save actions.',
+    { author: 'text', handle: 'text', body: 'text', time: 'text' },
+    ['author', 'body'],
+  ),
+  'post-composer': definition(
+    'Local post composer. Publishes entered text within the preview; no external network.',
+    { label: 'text', author: 'text', placeholder: 'text' },
+    ['label', 'author'],
+  ),
+  'inbox-pane': definition(
+    'Interactive local inbox with selectable sample conversations and per-thread replies.',
+    { title: 'text' },
+    ['title'],
+  ),
   'listing-card': definition(
     'Prepared accommodation/product discovery card with decorative local artwork and local save toggle. Sample listing; no booking backend.',
     {
@@ -132,7 +147,11 @@ export const extendedDefinitions = {
   ),
   resizable: definition(
     'Resizable workspace. Each direct child is one pane; 2–4 panes. Mobile stacks panes.',
-    { label: 'text', direction: ['horizontal', 'vertical'] },
+    {
+      label: 'text',
+      direction: ['horizontal', 'vertical'],
+      preset: ['balanced', 'workspace'],
+    },
     ['label'],
   ),
   'scroll-area': definition(
