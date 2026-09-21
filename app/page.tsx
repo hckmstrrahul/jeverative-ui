@@ -512,6 +512,16 @@ export default function Home() {
                 </p>
               </div>
               <div className="studio-actions">
+                <Tabs value={engine} onValueChange={(value) => {
+                  if (value !== 'jev-first' && value !== 'hybrid') return;
+                  cancel();
+                  setEngine(value);
+                }}>
+                  <TabsList aria-label="Composition mode">
+                    <TabsTrigger value="jev-first">Jev-first</TabsTrigger>
+                    <TabsTrigger value="hybrid">Hybrid</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               <Button
                 className="studio-connect"
                 variant="outline"
@@ -738,7 +748,7 @@ export default function Home() {
               Connect OpenRouter
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Choose a connection and composition engine.
+              Choose a connection and configure model settings.
             </DialogDescription>
             <fieldset className="connection-section">
               <legend>Connection</legend>
@@ -826,29 +836,6 @@ export default function Home() {
                 Delete my key
               </Button>
             )}
-            <fieldset className="connection-section">
-              <legend>Composition</legend>
-              <div className="connection-choices">
-                {[
-                  { id: 'jev-first', label: 'Jev-first' },
-                  { id: 'hybrid', label: 'Hybrid' },
-                ].map((option) => (
-                  <label key={option.id} className="connection-choice">
-                    <input
-                      type="radio"
-                      name="composition-engine"
-                      value={option.id}
-                      checked={engine === option.id}
-                      onChange={() => {
-                        cancel();
-                        setEngine(option.id as 'jev-first' | 'hybrid');
-                      }}
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
             {engine === 'hybrid' && (
               <>
                 <fieldset className="connection-section">

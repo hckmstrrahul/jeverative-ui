@@ -38,7 +38,7 @@ Coverage comes from the prepared library and supplied data. Jev-first does not i
 
 ## Hybrid: the secondary option
 
-Choose **Hybrid** in the connection modal when a request needs open-ended copy, data or component combinations beyond Jev-first’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-first.
+Choose **Hybrid** in the header’s composition selector when a request needs open-ended copy, data or component combinations beyond Jev-first’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-first.
 
 ```mermaid
 flowchart LR

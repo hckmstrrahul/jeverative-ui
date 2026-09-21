@@ -141,7 +141,7 @@ body {
 .studio-brand{display:flex;align-items:center;gap:9px;font-size:18px;letter-spacing:-.7px}
 .studio{padding:30px 36px 32px;max-width:1600px;flex:none}
 .studio-heading{gap:24px;margin-bottom:24px}
-.studio h1{font-family:"Inter Variable",sans-serif;font-weight:500;font-size:30px;letter-spacing:-1.1px}
+.studio h1{font-family:"Inter Variable",sans-serif;font-weight:600;font-size:30px;letter-spacing:-1.1px}
 .studio-heading p{margin-top:8px}
 .composer{flex-shrink:0}
 .composer textarea{min-height:62px}
@@ -192,3 +192,7 @@ body {
 /* Show click affordance consistently, including custom interactive controls. */
 :where(button, a[href], summary, select, label[for], input[type="button"], input[type="submit"], input[type="reset"], input[type="checkbox"], input[type="radio"], input[type="file"], [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="combobox"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]):not(:disabled):not([aria-disabled="true"]):not([data-disabled]){cursor:pointer}
 :where(button, input, select, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="combobox"], [role="option"], [role="menuitem"]):is(:disabled,[aria-disabled="true"],[data-disabled]){cursor:not-allowed}
+
+.studio-heading{gap:20px;flex-wrap:wrap}
+.studio-actions{flex-wrap:wrap}
+.studio-actions [data-slot="tabs-trigger"]{font-size:12px;padding-inline:10px}
