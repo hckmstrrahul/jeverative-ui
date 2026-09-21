@@ -177,3 +177,18 @@ body {
 .connection-error{font-size:13px;color:#b34040}
 @media(max-width:480px){.connection-dialog{padding:24px;gap:20px}.connection-choice{padding:12px;font-size:13px}}
 
+
+.studio-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.about-dialog{max-height:calc(100dvh - 32px);overflow-y:auto;gap:18px}
+.about-flow{list-style:none;padding:0;margin:0;display:grid;gap:22px}
+.about-flow li{position:relative;border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--muted);display:flex;flex-direction:column;gap:3px;text-align:center}
+.about-flow li:not(:last-child)::after{content:'↓';position:absolute;top:100%;left:calc(50% - 6px);line-height:22px;color:var(--muted-foreground)}
+.about-flow strong{font-size:13px;font-weight:600}
+.about-flow span{font-size:12px;color:var(--muted-foreground)}
+.about-points{list-style:disc;padding-left:18px;margin:0;display:grid;gap:8px;font-size:13px;line-height:1.5}
+.about-fallback{font-size:12px;line-height:1.5;color:var(--muted-foreground);border-top:1px solid var(--border);padding-top:14px}
+@media(max-width:640px){.studio-actions{align-self:flex-end;flex-wrap:wrap}}
+
+/* Show click affordance consistently, including custom interactive controls. */
+:where(button, a[href], summary, select, label[for], input[type="button"], input[type="submit"], input[type="reset"], input[type="checkbox"], input[type="radio"], input[type="file"], [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="combobox"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]):not(:disabled):not([aria-disabled="true"]):not([data-disabled]){cursor:pointer}
+:where(button, input, select, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="combobox"], [role="option"], [role="menuitem"]):is(:disabled,[aria-disabled="true"],[data-disabled]){cursor:not-allowed}

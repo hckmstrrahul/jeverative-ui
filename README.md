@@ -19,7 +19,7 @@ flowchart LR
 
 The engine batches decisions into **1–2 Jev calls**. Simple compositions can skip the second call. It selects existing components and supported values rather than generating React code or streaming a new component tree from a text model.
 
-**How fast?** A live desktop flight-booking generation on the production site completed in **1.18 seconds** on September 21, 2026. A separate server check completed in **1.06 seconds** with two Jev calls. These are individual observations, not a benchmark average or latency guarantee; prompt complexity, provider response time and network conditions affect results. The preview displays each run’s generation time.
+**How fast?** A live desktop flight-booking generation on the production site completed in **1.18 seconds** on September 21, 2026. A separate server check completed in **1.06 seconds** with two Jev calls. These are individual observations, not a benchmark average or latency guarantee; prompt complexity, provider response time and network conditions affect results. The preview displays each run’s generation time as “Jeverated in …”.
 
 ### What it can compose
 
@@ -55,6 +55,8 @@ flowchart LR
 Jev owns the overall arrangement, density and surfaces. The selected text model fills the layout with registered components, labels, sample data and interaction bindings. It uses the same component library; it does not create new React components.
 
 Hybrid uses one Jev planning call and one text-generation call, with at most one additional text correction when enabled. Local normalization runs before paid correction. Failed generation preserves the previous completed screen. Hybrid adds text-model latency and cost; the Jev-first timings above do not describe Hybrid performance.
+
+The **About** button beside OpenRouter explains this process with a simple diagram and plain-language notes. Example prompts fill the input; **Compose** starts generation.
 
 ## Shared renderer and connection
 

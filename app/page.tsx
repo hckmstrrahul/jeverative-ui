@@ -164,6 +164,7 @@ export default function Home() {
   const [seen, setSeen] = useState<string[]>(initialScreen.components);
   const [inspecting, setInspecting] = useState<string | null>(null);
   const [settings, setSettings] = useState(false);
+  const [about, setAbout] = useState(false);
   const [key, setKey] = useState('');
   const [keyDraft, setKeyDraft] = useState('');
   const [rememberKey, setRememberKey] = useState(false);
@@ -510,6 +511,7 @@ export default function Home() {
                   </a>
                 </p>
               </div>
+              <div className="studio-actions">
               <Button
                 className="studio-connect"
                 variant="outline"
@@ -518,6 +520,8 @@ export default function Home() {
                 {live ? <KeyRound /> : <Settings2 />}
                 {live ? 'OpenRouter connected' : 'Connect OpenRouter'}
               </Button>
+              <Button className="studio-connect" variant="outline" onClick={() => setAbout(true)}>About</Button>
+              </div>
             </div>
             {error && (
               <div role="alert" className="error-banner">
@@ -651,14 +655,9 @@ export default function Home() {
                   </div>
                   <h2>
                     {live
-                      ? 'Your next interface starts here'
+                      ? 'Choose an example or write a prompt, then press Compose.'
                       : 'Connect OpenRouter to turn your prompt into an interface.'}
                   </h2>
-                  {live && (
-                    <p>
-                      Choose an example or write a prompt, then press Compose.
-                    </p>
-                  )}
                   {!live && (
                     <Button variant="outline" onClick={() => setSettings(true)}>
                       <KeyRound size={15} />
@@ -703,6 +702,27 @@ export default function Home() {
             </div>
           </section>
         </main>
+        <Dialog open={about} onOpenChange={setAbout}>
+          <DialogContent className="about-dialog sm:max-w-[560px]">
+            <DialogTitle>How Jeverative works</DialogTitle>
+            <DialogDescription>
+              Jev turns your prompt into choices that shape an interface.
+            </DialogDescription>
+            <ol className="about-flow" aria-label="From your prompt to your interface">
+              <li><strong>You describe it</strong><span>“A flight booking screen”</span></li>
+              <li><strong>Prepared components become available</strong><span>Search fields, flight choices, fare options</span></li>
+              <li><strong>Jev chooses and arranges</strong><span>Relevant sections, layout and available settings</span></li>
+              <li><strong>The interface is validated and rendered</strong><span>A styled, interactive preview</span></li>
+            </ol>
+            <ul className="about-points">
+              <li>The app’s prepared library supplies components, styling and sample content.</li>
+              <li>Jev selects relevant sections, then chooses their arrangement and available settings—usually in two calls.</li>
+              <li>Local rules keep the result valid and adapt it to your screen size.</li>
+              <li>Jev-first composes existing building blocks; it doesn’t write new components or connect live services.</li>
+            </ul>
+            <p className="about-fallback"><strong>Need more flexibility?</strong> Hybrid is a separate option that adds a text model for more open-ended UI generation.</p>
+          </DialogContent>
+        </Dialog>
         <Dialog
           open={settings}
           onOpenChange={(open) => {

@@ -8,7 +8,8 @@ import './account.css';
 import './tree.css';
 
 export const metadata: Metadata = {
-  title: 'Jeverative — UI playground',
+  title: 'Jeverative Interfaces',
+  icons: { icon: { url: '/favicon.svg?v=2', type: 'image/svg+xml' } },
   description: 'A live shadcn playground, composed by Jev.',
 };
 
