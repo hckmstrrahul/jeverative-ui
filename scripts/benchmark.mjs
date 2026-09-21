@@ -1,3 +1,5 @@
+// Keep engine IDs stable in captures; display the current product names.
+const modeLabel = (engine) => ({'jev-first':'Jev-only',hybrid:'Jev + LLM',llm:'LLM-only'}[engine] ?? engine);
 import { writeFile } from 'node:fs/promises';
 import { readSecret } from './benchmark-key.mjs';
 
@@ -136,7 +138,7 @@ for (let repetition = 0; repetition < repeats; repetition++) {
         ),
       );
       console.log(
-        `${engine} · ${device} · ${repetition + 1}/${repeats}: ${row.ok ? `${row.wallMs} ms` : row.error}`,
+        `${modeLabel(engine)} · ${device} · ${repetition + 1}/${repeats}: ${row.ok ? `${row.wallMs} ms` : row.error}`,
       );
       if (!row.ok && /Server revision changed/.test(row.error || '')) {
         console.error(
@@ -167,7 +169,7 @@ console.table(
     const runs = results.filter((r) => r.engine === engine);
     const passed = runs.filter((r) => r.ok);
     return {
-      engine,
+      engine: modeLabel(engine),
       completed: `${passed.length}/${runs.length}`,
       jevComposed: runs.filter((r) => r.ok && r.plan).length,
       medianTotalMs: median(passed.map((r) => r.metrics?.totalMs)),

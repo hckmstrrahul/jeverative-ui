@@ -64,7 +64,7 @@ export default async function JevFirstQA() {
       if (event.type === 'complete') docs.push(event.document);
   return (
     <main className="p-6">
-      <h1 className="text-xl">Jev-first component QA</h1>
+      <h1 className="text-xl">Jev-only component QA</h1>
       <p className="my-3">
         Deterministic decisions, real compiler and renderer. No API calls.
       </p>

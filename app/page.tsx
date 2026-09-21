@@ -518,8 +518,8 @@ export default function Home() {
                   setEngine(value);
                 }}>
                   <TabsList aria-label="Composition mode">
-                    <TabsTrigger value="jev-first">Jev-first</TabsTrigger>
-                    <TabsTrigger value="hybrid">Hybrid</TabsTrigger>
+                    <TabsTrigger value="jev-first">Jev-only</TabsTrigger>
+                    <TabsTrigger value="hybrid">Jev + LLM</TabsTrigger>
                   </TabsList>
                 </Tabs>
               <Button
@@ -577,9 +577,11 @@ export default function Home() {
                 <span>
                   <Zap size={14} />
                   {live
-                    ? engine === 'llm'
-                      ? 'LLM · OpenRouter'
-                      : 'Jev · OpenRouter'
+                    ? engine === 'hybrid'
+                      ? 'Jev + LLM · OpenRouter'
+                      : engine === 'llm'
+                        ? 'LLM · OpenRouter'
+                        : 'Jev-only · OpenRouter'
                     : 'Connect OpenRouter to start'}
                 </span>
                 <div className="flex items-center gap-3">
@@ -728,9 +730,9 @@ export default function Home() {
               <li>The app’s prepared library supplies components, styling and sample content.</li>
               <li>Jev selects relevant sections, then chooses their arrangement and available settings—usually in two calls.</li>
               <li>Local rules keep the result valid and adapt it to your screen size.</li>
-              <li>Jev-first composes existing building blocks; it doesn’t write new components or connect live services.</li>
+              <li>Jev-only composes existing building blocks; it doesn’t write new components or connect live services.</li>
             </ul>
-            <p className="about-fallback"><strong>Need more flexibility?</strong> Hybrid is a separate option that adds a text model for more open-ended UI generation.</p>
+            <p className="about-fallback"><strong>Need more flexibility?</strong> Jev + LLM is a separate option that adds a text model for more open-ended UI generation.</p>
           </DialogContent>
         </Dialog>
         <Dialog

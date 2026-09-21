@@ -1,6 +1,6 @@
 # Desktop UI QA — 21 September 2026
 
-Scope: nine fresh hybrid generations in the existing authenticated localhost browser, plus the existing checkout. The sweep deliberately varied tasks; it was not a statistically random or blinded design-quality benchmark. Reviewed with Emil's design-engineering principles: restrained hierarchy, useful spacing, visible control labels, readable data and purposeful motion. All nine fresh runs completed. This does not imply all possible prompts will succeed.
+Scope: nine fresh Jev + LLM generations in the existing authenticated localhost browser, plus the existing checkout. The sweep deliberately varied tasks; it was not a statistically random or blinded design-quality benchmark. Reviewed with Emil's design-engineering principles: restrained hierarchy, useful spacing, visible control labels, readable data and purposeful motion. All nine fresh runs completed. This does not imply all possible prompts will succeed.
 
 ## Live screens inspected
 
@@ -38,7 +38,7 @@ The generation prompt now specifies desktop inbox panes, broad chart/board layou
 
 ## New benchmark failure coverage
 
-The supplied `adaptive-repair-v4` run completed 14/15 hybrid and 11/15 LLM-only, with successful-run medians of 10,297ms and 15,877ms. Both had nine repaired runs. These results predate the final QA changes and are not a new measured speed result for `desktop-qa-v5`.
+The supplied `adaptive-repair-v4` run completed 14/15 Jev + LLM and 11/15 LLM-only, with successful-run medians of 10,297ms and 15,877ms. Both had nine repaired runs. These results predate the final QA changes and are not a new measured speed result for `desktop-qa-v5`.
 
 Local regression cases now cover omitted overlay parents, missing contextual labels on button-group/financial-value/mint-pill-group, and fields incorrectly grouping multiple controls. Missing overlay placement attaches to its existing parent or the document's main region; explicit unknown parents still fail. Labels come from existing context or readable node identifiers. Multi-control fields become labelled plain panels with all children preserved. Invalid component kinds, unsupported data and invalid explicit graph references remain errors.
 

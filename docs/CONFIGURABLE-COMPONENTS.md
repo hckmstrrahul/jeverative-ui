@@ -1,6 +1,6 @@
 # Configurable prepared components
 
-Revision: `jev-configurable-v2`. This extends Jev-first without adding a text model or installing another UI generator.
+Revision: `jev-configurable-v2`. This extends Jev-only without adding a text model or installing another UI generator.
 
 ## Ownership
 

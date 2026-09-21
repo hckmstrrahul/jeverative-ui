@@ -4,13 +4,13 @@ A Jev-powered generative UI playground. Describe an interface and Jev selects, c
 
 [Try Jeverative](https://jeverative-ui.vercel.app)
 
-## Jev-first: the default
+## Jev-only: the default
 
 Jev makes the composition decisions. A prepared library supplies styled shadcn/ui components, sample content, supported property choices and prototype interactions. Local code builds and validates the resulting interface.
 
 ```mermaid
 flowchart LR
-  A[Prompt + device + supplied content] --> B[Prepared component candidates]
+  M[Jev-only] --> A[Prompt + device + supplied content] --> B[Prepared component candidates]
   B --> C[Jev selects relevant elements and layout]
   C --> D[Jev configures, groups and orders]
   D --> E[Local assembly and validation]
@@ -34,15 +34,15 @@ The engine batches decisions into **1–2 Jev calls**. Simple compositions can s
 
 Desktop, tablet and mobile prompts adapt the preview dimensions and layout rules. Variations reuse selected content while changing eligible arrangements and property choices. During generation, the canvas shows progress before presenting the completed composition.
 
-Coverage comes from the prepared library and supplied data. Jev-first does not invent arbitrary components or unrestricted copy. Search, booking and payment controls are interactive prototypes; they do not connect to live inventory or business backends.
+Coverage comes from the prepared library and supplied data. Jev-only does not invent arbitrary components or unrestricted copy. Search, booking and payment controls are interactive prototypes; they do not connect to live inventory or business backends.
 
-## Hybrid: the secondary option
+## Jev + LLM: the secondary option
 
-Choose **Hybrid** in the header’s composition selector when a request needs open-ended copy, data or component combinations beyond Jev-first’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-first.
+Choose **Jev + LLM** in the header’s composition selector when a request needs open-ended copy, data or component combinations beyond Jev-only’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-only.
 
 ```mermaid
 flowchart LR
-  A[Prompt + device] --> B[Jev chooses page layout]
+  M[Jev + LLM] --> A[Prompt + device] --> B[Jev chooses page layout]
   B --> C[Local compiler creates layout slots]
   C --> D[Text model supplies content and component structure]
   D --> E[Local validation + progressive preview]
@@ -54,7 +54,7 @@ flowchart LR
 
 Jev owns the overall arrangement, density and surfaces. The selected text model fills the layout with registered components, labels, sample data and interaction bindings. It uses the same component library; it does not create new React components.
 
-Hybrid uses one Jev planning call and one text-generation call, with at most one additional text correction when enabled. Local normalization runs before paid correction. Failed generation preserves the previous completed screen. Hybrid adds text-model latency and cost; the Jev-first timings above do not describe Hybrid performance.
+Jev + LLM uses one Jev planning call and one text-generation call, with at most one additional text correction when enabled. Local normalization runs before paid correction. Failed generation preserves the previous completed screen. Jev + LLM adds text-model latency and cost; the Jev-only timings above do not describe Jev + LLM performance.
 
 The **About** button beside OpenRouter explains this process with a simple diagram and plain-language notes. Example prompts fill the input; **Compose** starts generation.
 

@@ -30,7 +30,7 @@ Usage rules explicitly caution against cramming and reserve compact list spacing
 
 Seven more screens were visually inspected using Mobbin MCP, adding to the existing evidence set. Observations and canonical URLs are stored in `lib/reference-evidence.json`. `lib/tree/references.ts` selects relevant observations for both Jev planning and text generation. No Mobbin images or brand styling were copied, no model was trained, and the runtime does not call Mobbin itself.
 
-The hybrid candidate set now has eight desktop/tablet arrangements and four mobile arrangements. New variation excludes recent candidates, including the current structure, from Jev's actual allowed choices. When candidates are exhausted it permits older ones but still excludes the immediate predecessor. Explicit layout constraints can retain the structure. The generated content prompt requests regrouping/hierarchy changes. This guarantees a different eligible scaffold, not a subjective visual-quality improvement or indefinitely unique interfaces.
+The Jev + LLM candidate set now has eight desktop/tablet arrangements and four mobile arrangements. New variation excludes recent candidates, including the current structure, from Jev's actual allowed choices. When candidates are exhausted it permits older ones but still excludes the immediate predecessor. Explicit layout constraints can retain the structure. The generated content prompt requests regrouping/hierarchy changes. This guarantees a different eligible scaffold, not a subjective visual-quality improvement or indefinitely unique interfaces.
 
 ## Verification
 
@@ -49,7 +49,7 @@ Contract tests cover exclusion, rejection of excluded choices, compilation of ev
 - Official Invest/915/W logo assets are not present in the supplied resources. No substitute logo is fabricated.
 - Full app-bar variants (custom leading/action configurations, scroll response), simulated OS status indicators, keyboard-aware fixed docks, image thumbnails and all specialized order-card flows remain beyond the new bounded adapters.
 - Arbitrary text, legacy metric values and table cells are not guaranteed to satisfy financial semantics; explicit financial-value nodes are. The prompt directs finance generation to those nodes.
-- Desktop light/dark checks and live hybrid generation are covered in [Desktop UI QA](DESKTOP-UI-QA.md). A comparable mobile/tablet visual sweep is still outstanding. Code/SSR tests do not certify pixel accuracy or model choice quality.
+- Desktop light/dark checks and live Jev + LLM generation are covered in [Desktop UI QA](DESKTOP-UI-QA.md). A comparable mobile/tablet visual sweep is still outstanding. Code/SSR tests do not certify pixel accuracy or model choice quality.
 
 ## Metadata regression verification
 

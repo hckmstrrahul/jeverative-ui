@@ -170,7 +170,7 @@ await assert.rejects(async () => {
     },
   })) {
   }
-}, /outside Jev-first/);
+}, /outside Jev-only/);
 await assert.rejects(async () => {
   for await (const _ of composeJevFirst({
     prompt: 'Profile',
@@ -231,7 +231,7 @@ try {
   globalThis.fetch = originalFetch;
 }
 console.log(
-  'Jev-first: 8 scenarios × 2 themes, valid candidates, bounded batched composition, atomic presentation, no text calls, rejection and cancellation pass.',
+  'Jev-only: 8 scenarios × 2 themes, valid candidates, bounded batched composition, atomic presentation, no text calls, rejection and cancellation pass.',
 );
 
 // Variation preserves content even when the evaluator would select something else.
@@ -298,7 +298,7 @@ await assert.rejects(async () => {
 assert.equal(previewSeen, false);
 assert.equal(completeSeen, false);
 console.log(
-  'Jev-first variation conservation, candidate ownership, compact metric rows, unused columns, single-call screens and arrangement failure pass.',
+  'Jev-only variation conservation, candidate ownership, compact metric rows, unused columns, single-call screens and arrangement failure pass.',
 );
 
 // Adversarial placements still obey semantic and viewport constraints.

@@ -989,7 +989,7 @@ assert.throws(
   /missing props.label/,
 );
 console.log(
-  'Hybrid scaffold echoes never duplicate nodes or change Jev props; separate prompts and field/table regression cases pass.',
+  'Jev + LLM scaffold echoes never duplicate nodes or change Jev props; separate prompts and field/table regression cases pass.',
 );
 
 // Bounded normalization keeps topology and schema safety while accepting protocol variation.
@@ -1516,7 +1516,7 @@ console.log(
   'Metadata aliases complete without retries in both engines; targeted repair preserves unaffected nodes and validates updates/removals.',
 );
 
-// Hybrid end-of-stream error is repaired with one removal, not a new layout/tree.
+// Jev + LLM end-of-stream error is repaired with one removal, not a new layout/tree.
 let targetedPlans = 0,
   targetedText = 0;
 globalThis.fetch = async (url, options) => {
@@ -1606,7 +1606,7 @@ assert.ok(
 );
 globalThis.fetch = actualFetch;
 console.log(
-  'Hybrid targeted repair retains existing content throughout and makes no second Jev call.',
+  'Jev + LLM targeted repair retains existing content throughout and makes no second Jev call.',
 );
 
 // Optional support must never force filler or a paid correction.

@@ -442,7 +442,7 @@ export async function* composeJevFirst(
     chosen.supported !== 'yes'
   )
     throw new Error(
-      'This request needs content or capabilities outside Jev-first’s prepared library. Try Hybrid for open-ended generation.',
+      'This request needs content or capabilities outside Jev-only’s prepared library. Try Jev + LLM for open-ended generation.',
     );
   let selected = preserved.length
     ? preserved
@@ -453,7 +453,7 @@ export async function* composeJevFirst(
     selected = selected.filter((c) => c.id !== 'search');
   if (!selected.length)
     throw new Error(
-      'Jev selected no content. Refine the request or try Hybrid.',
+      'Jev selected no content. Refine the request or try Jev + LLM.',
     );
   if (selected.length > 24)
     throw new Error(
