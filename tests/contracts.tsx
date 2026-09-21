@@ -664,3 +664,5 @@ console.log(
 );
 
 await import('./tree-contracts');
+
+await import("./jev-first-contracts");

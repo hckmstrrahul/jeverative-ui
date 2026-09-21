@@ -1,3 +1,4 @@
+import { jevFirstResponse } from '@/lib/jev-first/response';
 import { systemMessage, textModelOptions } from '@/lib/tree/models';
 import { summarizeTextUsage } from '@/lib/tree/usage';
 import { GENERATION_REVISION } from '@/lib/tree/limits';
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
       { status: 400, headers },
     );
   const engine = body.engine ?? 'hybrid';
-  if (!['hybrid', 'llm'].includes(engine))
+  if (!['hybrid', 'llm', 'jev-first'].includes(engine))
     return Response.json(
       { error: 'Unknown composition engine.' },
       { status: 400, headers },
@@ -87,9 +88,10 @@ export async function POST(request: Request) {
   const autoRepair = body.autoRepair !== false;
   const model = body.model ?? DEFAULT_TEXT_MODEL;
   if (
-    typeof model !== 'string' ||
-    !/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:-]+$/.test(model) ||
-    /jev/i.test(model)
+    engine !== 'jev-first' &&
+    (typeof model !== 'string' ||
+      !/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._:-]+$/.test(model) ||
+      /jev/i.test(model))
   )
     return Response.json(
       { error: 'Choose a text generation model for the adaptive engine.' },
@@ -109,6 +111,13 @@ export async function POST(request: Request) {
     (['mobile', 'tablet', 'desktop'].includes(body.device)
       ? body.device
       : (previous?.device ?? 'desktop'));
+  if (engine === 'jev-first')
+    return jevFirstResponse(request, key, {
+      prompt: body.prompt,
+      device,
+      previous,
+      variation: body.mode === 'variation',
+    });
   const abort = new AbortController();
   const signal = AbortSignal.any([
     request.signal,

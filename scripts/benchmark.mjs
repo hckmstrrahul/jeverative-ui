@@ -7,6 +7,17 @@ const base = process.env.BENCHMARK_URL || 'http://localhost:3000';
 console.log(
   `Text model: ${process.env.BENCHMARK_MODEL || 'server default (Qwen3.7 Flash)'}`,
 );
+const selectedEngines = (process.env.BENCHMARK_ENGINES || 'llm,hybrid').split(
+  ',',
+);
+if (
+  !selectedEngines.length ||
+  selectedEngines.some((e) => !['llm', 'hybrid', 'jev-first'].includes(e)) ||
+  new Set(selectedEngines).size !== selectedEngines.length
+)
+  throw new Error(
+    'BENCHMARK_ENGINES must contain distinct llm, hybrid or jev-first values.',
+  );
 const repeats = Number(process.env.BENCHMARK_REPEATS || 3);
 if (!Number.isInteger(repeats) || repeats < 1 || repeats > 10)
   throw new Error('BENCHMARK_REPEATS must be 1–10.');
@@ -61,7 +72,9 @@ for (let repetition = 0; repetition < repeats; repetition++) {
   for (const [index, [device, prompt]] of cases.entries()) {
     // Sequential calls avoid self-induced contention; alternate ordering.
     const engines =
-      (repetition + index) % 2 ? ['hybrid', 'llm'] : ['llm', 'hybrid'];
+      (repetition + index) % 2
+        ? [...selectedEngines].reverse()
+        : selectedEngines;
     for (const engine of engines) {
       const started = performance.now();
       const row = {
@@ -150,7 +163,7 @@ const median = (values) => {
     : null;
 };
 console.table(
-  ['llm', 'hybrid'].map((engine) => {
+  selectedEngines.map((engine) => {
     const runs = results.filter((r) => r.engine === engine);
     const passed = runs.filter((r) => r.ok);
     return {
@@ -162,6 +175,12 @@ console.table(
         passed.map((r) => r.metrics?.firstContentMs),
       ),
       medianPlanMs: median(passed.map((r) => r.metrics?.planMs)),
+      medianJevCalls: median(passed.map((r) => r.metrics?.jevCalls)),
+      reportedJevCostUsd: runs.reduce(
+        (s, r) => s + (r.metrics?.jevCostUsd ?? 0),
+        0,
+      ),
+      completeJevCostReports: `${runs.filter((r) => r.metrics?.jevCostComplete).length}/${runs.length}`,
       repairedRuns: runs.filter((r) => r.metrics?.repairs > 0).length,
       reportedTextCostUsd: Number(
         runs

@@ -3,12 +3,17 @@
 type Props = {
   busy: boolean;
   live: boolean;
-  engine: 'hybrid' | 'llm' | 'jev';
+  engine: 'hybrid' | 'llm' | 'jev' | 'jev-first';
   status: string;
   plan?: { arrangement: string; density: string; surface: string };
   count: number;
   error: boolean;
   completed: boolean;
+  metrics?: {
+    totalMs: number;
+    firstContentMs: number | null;
+    jevCalls?: number;
+  };
 };
 export function GenerationActivity({
   busy,
@@ -19,6 +24,7 @@ export function GenerationActivity({
   count,
   error,
   completed,
+  metrics,
 }: Props) {
   const repairing = /correct|repair|fix/i.test(status);
   const stage = error
@@ -31,8 +37,14 @@ export function GenerationActivity({
         ? 1
         : 0;
   const labels = [
-    live ? (engine === 'llm' ? 'Compose' : 'Layout') : 'Layout',
-    repairing ? 'Repair' : 'Build',
+    live
+      ? engine === 'llm'
+        ? 'Compose'
+        : engine === 'jev-first'
+          ? 'Select'
+          : 'Layout'
+      : 'Layout',
+    repairing ? 'Repair' : engine === 'jev-first' ? 'Arrange' : 'Build',
     'Ready',
   ];
   const detail = error
@@ -50,7 +62,9 @@ export function GenerationActivity({
                 : 'Choosing a layout'
               : 'Preparing a local preview'
       : completed
-        ? 'Interface ready'
+        ? metrics?.jevCalls
+          ? `${(metrics.totalMs / 1000).toFixed(2)}s · ${metrics.jevCalls} Jev calls · no LLM`
+          : 'Interface ready'
         : live
           ? 'Ready when you are'
           : 'Connect to start';
@@ -65,7 +79,7 @@ export function GenerationActivity({
           {live
             ? engine === 'hybrid'
               ? 'Jev + LLM'
-              : engine === 'jev'
+              : engine === 'jev' || engine === 'jev-first'
                 ? 'Jev'
                 : 'LLM'
             : 'Not connected'}

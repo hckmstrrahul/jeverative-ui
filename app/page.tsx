@@ -59,7 +59,7 @@ type Result = {
   answers?: Answers;
   adjustments?: string[];
   latency?: number;
-  engine?: 'hybrid' | 'llm';
+  engine?: 'hybrid' | 'llm' | 'jev-first';
   plan?: { arrangement: string; density: string; surface: string };
   metrics?: {
     firstContentMs: number | null;
@@ -68,6 +68,7 @@ type Result = {
     repairs: number;
     totalMs: number;
     textUsage?: TextUsage;
+    jevCalls?: number;
   };
   model?: string;
 };
@@ -126,7 +127,10 @@ export default function Home() {
   const [streamStatus, setStreamStatus] = useState('');
   const [livePlan, setLivePlan] = useState<Result['plan']>();
   const [liveCount, setLiveCount] = useState(0);
-  const [engine, setEngine] = useState<'hybrid' | 'llm' | 'jev'>('hybrid');
+  const [completedMetrics, setCompletedMetrics] = useState<Result['metrics']>();
+  const [engine, setEngine] = useState<'hybrid' | 'llm' | 'jev' | 'jev-first'>(
+    'jev-first',
+  );
   const [autoRepair, setAutoRepair] = useState(true);
   const [hasLivePreview, setHasLivePreview] = useState(false);
   const [textModel, setTextModel] = useState<string>(DEFAULT_TEXT_MODEL);
@@ -290,6 +294,7 @@ export default function Home() {
         }
         if (requestId !== sequence.current) return;
         // Commit the finished screen before removing the streaming overlay.
+        setCompletedMetrics(next.metrics);
         apply(next.screen);
         setDraft(null);
 
@@ -486,6 +491,7 @@ export default function Home() {
                 count={busy ? liveCount : (screen.document?.nodes.length ?? 0)}
                 error={Boolean(error)}
                 completed={Boolean(lastPrompt)}
+                metrics={completedMetrics}
               />
             </div>
             {error && (
@@ -705,9 +711,14 @@ export default function Home() {
                 onChange={(e) => {
                   cancel();
 
-                  setEngine(e.target.value as 'hybrid' | 'llm' | 'jev');
+                  setEngine(
+                    e.target.value as 'hybrid' | 'llm' | 'jev' | 'jev-first',
+                  );
                 }}
               >
+                <NativeSelectOption value="jev-first">
+                  Jev-first · element composition
+                </NativeSelectOption>
                 <NativeSelectOption value="hybrid">
                   Jev-directed · adaptive UI
                 </NativeSelectOption>
@@ -718,7 +729,14 @@ export default function Home() {
                   Jev · prepared recipes
                 </NativeSelectOption>
               </NativeSelect>
-              {engine !== 'jev' && (
+              {engine === 'jev-first' && (
+                <p className="text-xs text-muted-foreground">
+                  Jev selects and arranges prepared Mint elements in up to two
+                  calls. Sample content; no text-model call. Unsupported
+                  requests are reported explicitly.
+                </p>
+              )}
+              {(engine === 'hybrid' || engine === 'llm') && (
                 <>
                   <div className="flex items-center justify-between gap-4">
                     <Label htmlFor="auto-repair">Auto-fix invalid output</Label>
