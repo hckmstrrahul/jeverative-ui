@@ -7,7 +7,7 @@ The 64 official shadcn catalog entries remain available. Mint styles their primi
 - `mint/mint-ds-groww-invest-v0.19.md`: supplied canonical component anatomy and tokens.
 - `mint/rules-groww-invest-v0.33.md`: supplied Groww Invest usage rules.
 - Explicit user override: **Hugeicons Free Stroke Rounded**, including active navigation icons. Keep the Mint IconView wrapper and size scale; do not use the supplied Standard icon font or paid solid icons.
-- Fonts are supplied local GrowwSans Regular/Medium and Sohne Kraftig. No external font request is required.
+- Typography uses self-hosted Inter Variable from Fontsource. The original proprietary font binaries have been removed from the current tree.
 - Canonical token tables take precedence over the abbreviated CSS starter when they disagree (notably Surface Z2). Usage rules override generic canonical guidance for application behaviour (pressed overlays, body scale, financial values).
 
 `python3 scripts/import-mint-tokens.py` regenerates the 92 use-case tokens per mode in `app/mint-tokens.css` and `lib/mint-tokens.json`. Transparent hover/press overlays are explicit implementation defaults because the export names these states without complete resolved values. They are recorded in the importer. Components reference use-case tokens through the shadcn variable bridge.

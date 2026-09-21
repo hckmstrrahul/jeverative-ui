@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { buildCandidates } from '../lib/jev-first/candidates';
-import { composeJevFirst, type Evaluate } from '../lib/jev-first/compose';
+import {
+  composeJevFirst,
+  type JevFirstEvent,
+  type Evaluate,
+} from '../lib/jev-first/compose';
 import { validateDocument } from '../lib/tree/spec';
 import { POST } from '../app/api/generate/route';
 import { TreeRenderer } from '../components/tree-renderer';
@@ -632,3 +636,77 @@ for (const prompt of [
 console.log(
   'Seven booking domains × three devices compile and render without text calls or correction.',
 );
+
+const financialPrompts = [
+  'stock product page mobile app with sticky buy and sell buttons at docked.',
+  'stock product page mobile app with chart in front, then holdings mini card, then performance and depth data, sticky buy and sell buttons at docked.',
+  'mutual fund detail and SIP investment',
+  'banking account and money transfer',
+  'loan EMI repayment dashboard',
+  'monthly budget expenses',
+  'merchant invoice settlements',
+  'crypto asset detail',
+  'insurance policies and claims',
+  'KYC identity verification',
+  'portfolio website',
+];
+for (const prompt of financialPrompts) {
+  const catalog = buildCandidates(prompt);
+  assert.ok(catalog.length >= 3, prompt);
+  for (const device of ['desktop', 'tablet', 'mobile'] as const) {
+    let result: Extract<JevFirstEvent, { type: 'complete' }> | undefined;
+    const base = evaluator(catalog.map((c) => c.id));
+    for await (const event of composeJevFirst({
+      prompt,
+      device,
+      signal: new AbortController().signal,
+      evaluate: async (q, s, a) => {
+        assert.equal(q.supported, undefined);
+        return base(q, s, a);
+      },
+    }))
+      if (event.type === 'complete') result = event;
+    assert.ok(result, prompt);
+    validateDocument(result.document);
+    const markup = renderToStaticMarkup(
+      <TreeRenderer document={result.document} />,
+    );
+    assert.ok(markup.length > 1000);
+    assert.equal(result.metrics.textMs, 0);
+    assert.equal(result.metrics.repairs, 0);
+    if (prompt.startsWith('stock')) {
+      const nodes = result.document.nodes;
+      assert.equal(
+        nodes.find((n) => n.kind === 'mint-action-dock')?.parent,
+        'jf_page',
+      );
+      const positions = ['chart', 'holdings', 'performance', 'depth'].map(
+        (id) => nodes.findIndex((n) => n.id === `jf_fin_stock_${id}`),
+      );
+      assert.ok(
+        positions.every((v, i) => v >= 0 && (!i || v > positions[i - 1])),
+      );
+      assert.ok(markup.includes('Buy') && markup.includes('Sell'));
+    }
+    if (prompt === 'portfolio website') {
+      assert.ok(markup.includes('Selected work'));
+      assert.ok(!markup.includes('Investment portfolio'));
+    }
+  }
+}
+console.log(
+  'Eleven financial and personal portfolio prompts × three devices render; stock order, dock ownership and zero text calls pass.',
+);
+// Even when Jev omits every optional group, explicit stock requirements survive.
+for await (const event of composeJevFirst({
+  prompt: financialPrompts[1],
+  device: 'mobile',
+  signal: new AbortController().signal,
+  evaluate: evaluator([]),
+})) {
+  if (event.type !== 'complete') continue;
+  for (const part of ['chart', 'holdings', 'performance', 'depth', 'dock'])
+    assert.ok(
+      event.document.nodes.some((n) => n.id === `jf_fin_stock_${part}`),
+    );
+}

@@ -12,6 +12,7 @@ import type { TextUsage } from '@/lib/tree/usage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUp,
+  Info,
   KeyRound,
   Monitor,
   RotateCcw,
@@ -70,6 +71,17 @@ type Result = {
   model?: string;
 };
 const examplePrompts = [
+  {
+    label: 'Stock detail',
+    prompt:
+      'Stock product page mobile app with chart first, then holdings mini card, performance and market depth, with sticky docked Buy and Sell buttons.',
+  },
+  {
+    label: 'Portfolio website',
+    prompt:
+      'Personal portfolio website with selected projects, about, expertise and contact.',
+  },
+
   {
     label: 'Flight booking',
     prompt:
@@ -497,15 +509,6 @@ export default function Home() {
                   >
                     @hckmstrrahul
                   </a>
-                  <span aria-hidden="true"> • </span>
-                  <a
-                    href="https://github.com/hckmstrrahul/jeverative-ui"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-4 hover:text-foreground"
-                  >
-                    Github
-                  </a>
                 </p>
               </div>
               <Button
@@ -583,18 +586,14 @@ export default function Home() {
                 </div>
               </div>
             </form>
-            {engine === 'jev-first' && (
-              <details className="composer-data-help">
-                <summary>Use your own content</summary>
-                <p>
-                  Add lines such as <code>Name: Rahul</code>,{' '}
-                  <code>INR balance: 42500</code> or{' '}
-                  <code>Destination: Goa</code>. For custom fields, metrics,
-                  tables or charts, use a JSON data block—try Custom workspace.
-                  Supplied data is sent to OpenRouter with your prompt.
-                </p>
-              </details>
-            )}
+            <p className="composer-capability-note">
+              <span>
+                <Info aria-hidden="true" /> Note:
+              </span>{' '}
+              Create interface prototypes for finance, dashboards, portfolios,
+              feeds and booking with prepared components. Live data, real
+              transactions and arbitrary custom components aren’t generated.
+            </p>
             <div className="prompt-suggestions">
               {examplePrompts.map(({ label, prompt: example }) => (
                 <Button

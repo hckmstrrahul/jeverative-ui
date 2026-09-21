@@ -27,7 +27,7 @@
 }
 .profile-avatar [data-slot='avatar-fallback'] {
   font:
-    28px/40px Sohne,
+    28px/40px "Inter Variable",
     sans-serif;
   background: var(--backgroundPositiveSubtle, var(--muted));
   color: var(--contentPrimary);
@@ -50,7 +50,7 @@
 }
 .composed-screen .profile-intro h3 {
   font:
-    500 28px/36px Sohne,
+    500 28px/36px "Inter Variable",
     sans-serif;
   margin: 4px 0;
 }
@@ -82,7 +82,7 @@
 }
 .profile-stats dd {
   font:
-    500 20px/28px Sohne,
+    500 20px/28px "Inter Variable",
     sans-serif;
 }
 .profile-cover {
@@ -97,7 +97,7 @@
 .profile-cover span {
   max-width: 280px;
   font:
-    500 28px/36px Sohne,
+    500 28px/36px "Inter Variable",
     sans-serif;
 }
 .profile-cover + .profile-hero-content {
@@ -178,7 +178,7 @@
 }
 .project-art > span {
   font:
-    500 48px/1 Sohne,
+    500 48px/1 "Inter Variable",
     sans-serif;
 }
 .art-1,
@@ -267,7 +267,7 @@
 }
 .account-settings-group > header h3 {
   font:
-    500 18px/28px Sohne,
+    500 18px/28px "Inter Variable",
     sans-serif;
 }
 .account-settings-group > header p {

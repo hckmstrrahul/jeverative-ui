@@ -1,24 +1,6 @@
-@font-face {
-  font-family: GrowwSans;
-  src: url('/fonts/GrowwSans-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: GrowwSans;
-  src: url('/fonts/GrowwSans-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: Sohne;
-  src: url('/fonts/Sohne-Kraftig.otf') format('opentype');
-  font-weight: 500;
-  font-display: swap;
-}
 :root,
 .mint-theme {
-  --font-sans: GrowwSans, Arial, sans-serif;
+  --font-sans: "Inter Variable", Arial, sans-serif;
   --background: var(--backgroundPrimary);
   --foreground: var(--contentPrimary);
   --card: var(--backgroundSurfaceZ1);
@@ -49,11 +31,11 @@
   --chart-3: var(--contentWarning);
   --chart-4: var(--contentNegative);
   --chart-5: var(--contentSecondary);
-  font-family: GrowwSans, Arial, sans-serif;
+  font-family: "Inter Variable", Arial, sans-serif;
   font-synthesis: none;
 }
 body {
-  font-family: GrowwSans, Arial, sans-serif;
+  font-family: "Inter Variable", Arial, sans-serif;
 }
 button,
 input,
@@ -70,7 +52,7 @@ textarea {
 .mint-theme [data-slot='drawer-title'],
 .mint-theme [data-slot='tabs-trigger'],
 .mint-number {
-  font-family: Sohne, Arial, sans-serif;
+  font-family: "Inter Variable", Arial, sans-serif;
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -173,7 +155,7 @@ textarea {
   letter-spacing: 0;
 }
 .mint-theme .metrics strong {
-  font-family: Sohne, Arial, sans-serif;
+  font-family: "Inter Variable", Arial, sans-serif;
   font-size: 20px;
   line-height: 32px;
   font-weight: 500;
@@ -486,7 +468,7 @@ textarea {
   gap: 8px;
 }
 .mint-appbar-row > strong {
-  font-family: Sohne, Arial, sans-serif;
+  font-family: "Inter Variable", Arial, sans-serif;
   font-size: 18px;
   line-height: 28px;
   font-weight: 500;
@@ -560,7 +542,7 @@ textarea {
   min-width: 0;
   color: var(--contentTertiary);
   font:
-    500 10px/12px Sohne,
+    500 10px/12px "Inter Variable",
     Arial,
     sans-serif;
 }
@@ -756,7 +738,7 @@ textarea {
   background: transparent;
 }
 .mint-portfolio-summary .mint-kpi:not(:first-child) .mint-number {
-  font-family: GrowwSans, sans-serif;
+  font-family: "Inter Variable", sans-serif;
   font-size: 16px;
   line-height: 24px;
 }

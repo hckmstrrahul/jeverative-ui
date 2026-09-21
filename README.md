@@ -24,6 +24,9 @@ The engine batches decisions into **1–2 Jev calls**. Simple compositions can s
 ### What it can compose
 
 - Profiles, settings, dashboards, portfolios, planners and checkout interfaces.
+- Stock and crypto detail pages with price charts, holdings, performance, market depth and docked Buy/Sell actions.
+- Mutual funds/SIP, banking/transfers, credit repayments, budgets, merchant invoices/settlements, insurance and identity verification prototypes.
+- Personal portfolio websites with projects, about, expertise and contact groups, separate from investment portfolios.
 - Discovery and social feeds, composers, navigation and inbox panes.
 - Booking interfaces for flights, trains, buses, car rentals, restaurants, events and appointments.
 - Interfaces using supplied names, copy, fields, metrics, charts and tabular data.

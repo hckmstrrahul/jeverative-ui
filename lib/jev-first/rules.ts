@@ -32,6 +32,7 @@ export function sensibleLayout(
   layout: string,
   device: string,
 ) {
+  if (selected.some((c) => c.id.startsWith('fin_website_'))) return 'reading';
   if (selected.some((c) => c.nodes[0].kind === 'listing-card'))
     return 'stacked';
   if (device === 'mobile') return layout === 'reading' ? 'reading' : 'stacked';
@@ -77,6 +78,46 @@ export function constrainPlacement(
       out[`order_${id}`] = String(cohorts.indexOf(cohort) * 100 + index);
     });
     out[`group_${parent}`] = 'stack';
+  }
+  const finance = selected.filter((c) => c.id.startsWith('fin_'));
+  if (finance.length) {
+    const sequence = [
+      'intro',
+      'quote',
+      'value',
+      'balance',
+      'spent',
+      'chart',
+      'holdings',
+      'performance',
+      'depth',
+      'orders',
+      'ticket',
+      'allocation',
+      'transactions',
+      'schedule',
+      'categories',
+      'invoices',
+      'policies',
+      'identity',
+      'verification',
+      'projects',
+      'about',
+      'skills',
+      'contact',
+      'invest',
+      'transfer',
+      'payment',
+      'expense',
+      'invoice',
+      'claim',
+      'dock',
+    ];
+    for (const c of finance) {
+      out[`parent_${c.id}`] = 'a';
+      out[`order_${c.id}`] = String(sequence.indexOf(c.id.split('_').at(-1)!));
+    }
+    out.group_a = 'stack';
   }
   // Reservation criteria precede inventory; optional checkout groups follow.
   const booking = selected.filter((c) => c.id.startsWith('booking_'));

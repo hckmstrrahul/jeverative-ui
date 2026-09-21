@@ -344,7 +344,7 @@
   background: var(--backgroundPrimary);
   color: var(--contentSecondary);
   font:
-    400 14px/20px GrowwSans,
+    400 14px/20px "Inter Variable",
     sans-serif;
 }
 .canvas-generation-skeleton {
@@ -380,7 +380,7 @@
   background: var(--backgroundPrimary);
   color: var(--contentSecondary);
   font:
-    400 12px/18px GrowwSans,
+    400 12px/18px "Inter Variable",
     sans-serif;
 }
 .emulator {

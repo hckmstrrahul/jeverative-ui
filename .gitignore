@@ -44,3 +44,6 @@ next-env.d.ts
 # Local benchmark captures and deployment bundles
 /benchmark-*.json
 /.output/
+
+# Retired proprietary font binaries
+/public/fonts/*.otf

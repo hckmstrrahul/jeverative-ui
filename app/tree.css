@@ -4,7 +4,7 @@
   container: tree / inline-size;
   color: var(--contentPrimary);
   font:
-    400 14px/20px GrowwSans,
+    400 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-page {
@@ -78,7 +78,7 @@
   max-width: 760px;
 }
 .tree-heading {
-  font-family: Sohne, sans-serif;
+  font-family: "Inter Variable", sans-serif;
   font-weight: 500;
   text-wrap: balance;
 }
@@ -89,7 +89,7 @@
 .tree-view h2.tree-heading,
 .tree-section-heading h2 {
   font:
-    500 18px/28px Sohne,
+    500 18px/28px "Inter Variable",
     sans-serif;
 }
 .tree-view h3.tree-heading {
@@ -158,7 +158,7 @@
   display: block;
   margin: 4px 0;
   font:
-    500 20px/32px Sohne,
+    500 20px/32px "Inter Variable",
     sans-serif;
   font-variant-numeric: tabular-nums;
 }
@@ -290,7 +290,7 @@
   flex-shrink: 0;
   white-space: nowrap;
   font:
-    500 16px/24px Sohne,
+    500 16px/24px "Inter Variable",
     sans-serif;
 }
 .tree-preference {
@@ -301,12 +301,12 @@
 }
 .tree-view [data-slot='item-title'] {
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-view [data-slot='item-description'] {
   font:
-    400 12px/18px GrowwSans,
+    400 12px/18px "Inter Variable",
     sans-serif;
   color: var(--contentSecondary);
 }
@@ -334,7 +334,7 @@
   align-items: baseline;
   gap: 16px;
   font:
-    400 14px/20px GrowwSans,
+    400 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-finance > span {
@@ -353,12 +353,12 @@
 }
 .tree-finance-anchor strong {
   font:
-    500 20px/32px Sohne,
+    500 20px/32px "Inter Variable",
     sans-serif;
 }
 .tree-finance strong[data-unavailable='true'] {
   font:
-    400 14px/20px GrowwSans,
+    400 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-mint-row {
@@ -397,7 +397,7 @@
 .tree-mint-row-copy strong {
   display: block;
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -406,7 +406,7 @@
 .tree-mint-row-copy p {
   margin-top: 2px;
   font:
-    400 12px/18px GrowwSans,
+    400 12px/18px "Inter Variable",
     sans-serif;
   color: var(--contentSecondary);
 }
@@ -414,7 +414,7 @@
   flex-shrink: 0;
   white-space: nowrap;
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-mint-appbar {
@@ -439,7 +439,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font:
-    500 18px/28px Sohne,
+    500 18px/28px "Inter Variable",
     sans-serif;
 }
 .tree-mint-appbar-title:has(p) strong {
@@ -449,7 +449,7 @@
 .tree-mint-appbar-title p {
   color: var(--contentSecondary);
   font:
-    400 12px/18px GrowwSans,
+    400 12px/18px "Inter Variable",
     sans-serif;
 }
 .tree-mint-appbar-actions {
@@ -477,7 +477,7 @@
   gap: 4px;
   color: var(--contentTertiary);
   font:
-    500 10px/14px Sohne,
+    500 10px/14px "Inter Variable",
     sans-serif;
 }
 .tree-mint-bottomnav button span {
@@ -495,7 +495,7 @@
   padding: 0 12px;
   gap: 6px;
   font:
-    500 12px/18px GrowwSans,
+    500 12px/18px "Inter Variable",
     sans-serif;
   border: 1px solid transparent;
   background: transparent;
@@ -526,7 +526,7 @@
 }
 .tree-mint-order label {
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-mint-order-control {
@@ -557,7 +557,7 @@
 }
 .tree-mint-dock > p {
   font:
-    400 12px/18px GrowwSans,
+    400 12px/18px "Inter Variable",
     sans-serif;
   margin-bottom: 12px;
 }
@@ -573,7 +573,7 @@
   min-height: 48px;
   border-radius: 8px;
   font:
-    500 16px/24px GrowwSans,
+    500 16px/24px "Inter Variable",
     sans-serif;
 }
 .tree-view [data-slot='tabs-list'][data-variant='line'] {
@@ -608,20 +608,20 @@
 .tree-view [data-mint-size='small'] {
   height: 32px;
   font:
-    500 12px/18px GrowwSans,
+    500 12px/18px "Inter Variable",
     sans-serif;
 }
 .tree-view [data-mint-size='medium'] {
   height: 40px;
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
 }
 .tree-view [data-mint-size='large'] {
   height: 48px;
   width: 100%;
   font:
-    500 16px/24px GrowwSans,
+    500 16px/24px "Inter Variable",
     sans-serif;
 }
 .tree-view
@@ -678,7 +678,7 @@
 }
 .tree-panel > [data-kind='chart'] .tree-section-heading h2 {
   font:
-    500 14px/20px GrowwSans,
+    500 14px/20px "Inter Variable",
     sans-serif;
 }
 
@@ -715,10 +715,22 @@
 .tree-listing-media>[data-slot=badge]{position:absolute;top:12px;left:12px;background:#fff;color:#343b38}
 .tree-listing-save{position:absolute;right:12px;top:12px;border-radius:50%;background:#fff;color:#343b38}
 .tree-listing-title{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.tree-listing-title h3{font:500 14px/20px GrowwSans,sans-serif;margin:0}
-.tree-listing-title span{font:400 12px/18px GrowwSans,sans-serif;white-space:nowrap}
-.tree-listing-card p{font:400 14px/20px GrowwSans,sans-serif;color:var(--contentSecondary);margin:0}
-.tree-listing-price{font:500 14px/20px GrowwSans,sans-serif;margin-top:4px}
+.tree-listing-title h3{font:500 14px/20px "Inter Variable",sans-serif;margin:0}
+.tree-listing-title span{font:400 12px/18px "Inter Variable",sans-serif;white-space:nowrap}
+.tree-listing-card p{font:400 14px/20px "Inter Variable",sans-serif;color:var(--contentSecondary);margin:0}
+.tree-listing-price{font:500 14px/20px "Inter Variable",sans-serif;margin-top:4px}
 .tree-listing-price span{font-weight:400;color:var(--contentSecondary)}
 
-.social-post{padding:16px 0;border-bottom:1px solid var(--border)}.social-author{display:flex;gap:10px;align-items:center}.social-author strong{font-weight:500}.social-author p,.social-compose-footer span{font-size:12px;color:var(--contentSecondary)}.social-body{margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere}.social-actions{display:flex;gap:12px}.social-composer textarea{margin-top:8px;min-height:96px}.social-compose-label{display:block;font-weight:500}.social-compose-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.social-inbox{display:flex;flex-direction:column;gap:14px;min-width:0}.social-inbox h2{font:500 18px/28px Sohne,sans-serif}.social-thread-tabs{display:flex;gap:4px;flex-wrap:wrap}.social-messages{display:flex;flex-direction:column;gap:12px;min-height:180px;max-height:360px;overflow:auto}.social-messages p{padding:12px;border-radius:10px;background:var(--backgroundSecondary);overflow-wrap:anywhere}.social-sent{margin-left:20px}.social-inbox textarea{margin-top:8px}.social-inbox>button{align-self:flex-end}
+.social-post{padding:16px 0;border-bottom:1px solid var(--border)}.social-author{display:flex;gap:10px;align-items:center}.social-author strong{font-weight:500}.social-author p,.social-compose-footer span{font-size:12px;color:var(--contentSecondary)}.social-body{margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere}.social-actions{display:flex;gap:12px}.social-composer textarea{margin-top:8px;min-height:96px}.social-compose-label{display:block;font-weight:500}.social-compose-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.social-inbox{display:flex;flex-direction:column;gap:14px;min-width:0}.social-inbox h2{font:500 18px/28px "Inter Variable",sans-serif}.social-thread-tabs{display:flex;gap:4px;flex-wrap:wrap}.social-messages{display:flex;flex-direction:column;gap:12px;min-height:180px;max-height:360px;overflow:auto}.social-messages p{padding:12px;border-radius:10px;background:var(--backgroundSecondary);overflow-wrap:anywhere}.social-sent{margin-left:20px}.social-inbox textarea{margin-top:8px}.social-inbox>button{align-self:flex-end}
+
+/* Transaction actions stay inside the generated preview, never the host page. */
+.mint-app-viewport:has(.tree-page > [data-kind='mint-action-dock']) {
+  max-height: max(320px, calc(70svh - 132px));
+}
+.tree-page > [data-kind='mint-action-dock'] {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--backgroundPrimary);
+  padding-bottom: 12px;
+}

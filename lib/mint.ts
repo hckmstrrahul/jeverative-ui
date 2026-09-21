@@ -166,7 +166,7 @@ export const mintRules = {
   versions:
     'Mint Groww Invest tokens v0.19, usage v0.33. User override: Hugeicons free Stroke Rounded SVG inside IconView; use locally supplied fonts.',
   typography:
-    'GrowwSans 400/500 for content and button labels, Sohne 500 ONLY for structure and numeric anchors. Body 12/18,14/20,16/24. Section titles 18/28. One numeric heading anchor per card. List row values use body 14/20 medium, not headings. No 10px body.',
+    'Inter Variable 400/500 for content and button labels, Inter Variable 500 ONLY for structure and numeric anchors. Body 12/18,14/20,16/24. Section titles 18/28. One numeric heading anchor per card. List row values use body 14/20 medium, not headings. No 10px body.',
   surfaces:
     'No shadows. Canvas backgroundPrimary, cards backgroundSurfaceZ1, overlays backgroundSurfaceZ2. Match nested borders and subtle backgrounds to OnSurface variants. Cards >=60px tall radius16; compact cards/buttons radius8.',
   spacing:

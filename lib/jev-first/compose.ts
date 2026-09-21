@@ -108,6 +108,8 @@ function assemble(
   layout: string,
   placements?: Record<string, string>,
 ): UIDocument {
+  const docks = selected.filter((c) => c.nodes[0].kind === 'mint-action-dock');
+  selected = selected.filter((c) => c.nodes[0].kind !== 'mint-action-dock');
   const nodes: UINode[] = [
     root(device, layout),
     {
@@ -214,6 +216,7 @@ function assemble(
       }
     }
   }
+  for (const dock of docks) nodes.push(...structuredClone(dock.nodes));
   return validateDocument({ version: 1, title, device, theme, nodes });
 }
 /** Two finite evaluations. No text model and no free-form JSON generation. */
@@ -332,11 +335,21 @@ export async function* composeJevFirst(
               : 'two-column';
     delete layouts[old];
   }
+  const screenTitles = { ...titles };
+  const finance = candidates.find((c) => c.id.startsWith('fin_'));
+  if (finance) {
+    for (const key of Object.keys(screenTitles)) delete screenTitles[key];
+    screenTitles.finance = finance.id.includes('_website_')
+      ? 'Creative portfolio'
+      : finance.id.includes('_stock_')
+        ? 'Stock overview'
+        : 'Financial workspace';
+  }
   const bookingDomain = candidates
     .find((c) => c.id.startsWith('booking_') && c.id.endsWith('_search'))
     ?.id.split('_')[1];
   if (bookingDomain)
-    titles.booking = (
+    screenTitles.booking = (
       {
         flight: 'Flights',
         train: 'Trains',
@@ -357,7 +370,7 @@ export async function* composeJevFirst(
     ),
     title: choice(
       'Choose the closest screen title; retain the existing title on edits unless explicitly changed.',
-      titles,
+      screenTitles,
     ),
     layout: choice(
       'Choose responsive macro layout. Prefer compact reading for settings/forms; full width for tables and boards. Respect explicit column requirements. Groups will be composed in a second batch.',
@@ -370,10 +383,13 @@ export async function* composeJevFirst(
   };
   const knownDiscovery =
     /\b(airbnb|accommodation|vacation rentals?|stay discovery)\b/i.test(prompt);
+  const knownFinance = candidates.some(
+    (c) => c.id.startsWith('fin_') && c.required,
+  );
   const knownBooking = candidates.some(
     (c) => c.id.startsWith('booking_') && c.required,
   );
-  if (knownDiscovery || knownBooking) delete select.supported;
+  if (knownDiscovery || knownBooking || knownFinance) delete select.supported;
   const resources = new Map<string, Candidate[]>();
   for (const c of candidates) {
     const key = c.resource ?? c.id;
@@ -415,7 +431,12 @@ export async function* composeJevFirst(
     limits:
       'At most 24 content candidates. Use supplied data where provided; otherwise prepared sample data. No arbitrary prose, backend actions, drag-and-drop or working table search. All choices are independent; coordinate them using the whole request.',
   });
-  if (!knownDiscovery && !knownBooking && chosen.supported !== 'yes')
+  if (
+    !knownDiscovery &&
+    !knownBooking &&
+    !knownFinance &&
+    chosen.supported !== 'yes'
+  )
     throw new Error(
       'This request needs content or capabilities outside Jev-first’s prepared library. Try Hybrid for open-ended generation.',
     );
@@ -447,7 +468,7 @@ export async function* composeJevFirst(
   )?.[1];
   const title =
     (typeof data.title === 'string' ? data.title : quotedTitle) ??
-    (prior ? prior.title : titles[chosen.title]);
+    (prior ? prior.title : screenTitles[chosen.title]);
   let document = assemble(selected, title, device, theme, chosen.layout);
   const plan = {
     arrangement: chosen.layout,

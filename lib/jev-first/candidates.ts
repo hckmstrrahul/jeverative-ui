@@ -1,3 +1,4 @@
+import { financeCandidates } from './finance';
 import { bookingCandidates } from './booking';
 import { validateDocument, type UIDocument, type UINode } from '../tree/spec';
 
@@ -22,6 +23,8 @@ export function buildCandidates(
   prompt: string,
   previous?: UIDocument,
 ): Candidate[] {
+  const finance = financeCandidates(prompt, previous);
+  if (finance.length) return finance;
   const out: Candidate[] = [];
   function add(
     id: string,
