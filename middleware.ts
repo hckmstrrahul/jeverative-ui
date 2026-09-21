@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-
 // Earlier deployments left path-scoped Vercel pins on asset requests. A new
 // document must not fetch its CSS/JS or API responses from that old deployment.
 export function middleware() {
-  const response = NextResponse.next();
+  // Vercel also builds this file outside Vinext's next/server alias. Keep it
+  // dependency-free so both runtimes can execute the routing continuation.
+  const response = new Response(null, { headers: { 'x-middleware-next': '1' } });
   for (const path of [
     '/',
     '/_next',
