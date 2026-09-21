@@ -78,6 +78,22 @@ export function constrainPlacement(
     });
     out[`group_${parent}`] = 'stack';
   }
+  // Reservation criteria precede inventory; optional checkout groups follow.
+  const booking = selected.filter((c) => c.id.startsWith('booking_'));
+  if (booking.length) {
+    const sequence = ['search', 'results', 'fare', 'extras', 'details'];
+    for (const c of booking) {
+      const suffix = c.id.split('_').at(-1)!;
+      out[`parent_${c.id}`] = 'a';
+      out[`order_${c.id}`] = String(sequence.indexOf(suffix));
+    }
+    out.group_a = 'stack';
+    for (const id of ['coupon', 'payment'])
+      if (available.has(id)) {
+        out[`parent_${id}`] = 'a';
+        out[`order_${id}`] = '10';
+      }
+  }
   // Conversation list, active thread, then optional customer context.
   if (available.has('conversation') && available.has('conversation_list')) {
     const panes =

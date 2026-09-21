@@ -332,6 +332,21 @@ export async function* composeJevFirst(
               : 'two-column';
     delete layouts[old];
   }
+  const bookingDomain = candidates
+    .find((c) => c.id.startsWith('booking_') && c.id.endsWith('_search'))
+    ?.id.split('_')[1];
+  if (bookingDomain)
+    titles.booking = (
+      {
+        flight: 'Flights',
+        train: 'Trains',
+        bus: 'Buses',
+        car: 'Car rental',
+        restaurant: 'Table reservations',
+        event: 'Event tickets',
+        appointment: 'Appointments',
+      } as Record<string, string>
+    )[bookingDomain];
   const select: Record<string, Question> = {
     supported: choice(
       'Can the supplied capabilities reasonably represent the core requested interface? Choose unavailable for unrelated tasks or missing essential data/actions. Never pretend to support a real backend. This tool always builds UI prototypes: visual search, booking and payment controls do not require a backend to count as supported. Familiar product names mean a similar interface, not full product integration. Supplied fields and datasets extend the vocabulary to other domains.',
@@ -355,7 +370,10 @@ export async function* composeJevFirst(
   };
   const knownDiscovery =
     /\b(airbnb|accommodation|vacation rentals?|stay discovery)\b/i.test(prompt);
-  if (knownDiscovery) delete select.supported;
+  const knownBooking = candidates.some(
+    (c) => c.id.startsWith('booking_') && c.required,
+  );
+  if (knownDiscovery || knownBooking) delete select.supported;
   const resources = new Map<string, Candidate[]>();
   for (const c of candidates) {
     const key = c.resource ?? c.id;
@@ -397,7 +415,7 @@ export async function* composeJevFirst(
     limits:
       'At most 24 content candidates. Use supplied data where provided; otherwise prepared sample data. No arbitrary prose, backend actions, drag-and-drop or working table search. All choices are independent; coordinate them using the whole request.',
   });
-  if (!knownDiscovery && chosen.supported !== 'yes')
+  if (!knownDiscovery && !knownBooking && chosen.supported !== 'yes')
     throw new Error(
       'This request needs content or capabilities outside Jev-first’s prepared library. Try Hybrid for open-ended generation.',
     );

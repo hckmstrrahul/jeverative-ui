@@ -13,6 +13,11 @@ for (const path of ['/qa', '/qa/', '/qa/jev-first', '/architecture', '/architect
 for (const path of ['/', '/api/generate', '/api/compose', '/api/connection', '/favicon.svg']) {
   assert.ok(!blocked.test(path));
 }
+// Header-only routes must continue to filesystem resolution. Otherwise an
+// edge cache can retain an empty response for an immutable CSS/JS URL.
+for (const route of config.routes ?? []) {
+  if (route.src && route.headers && !route.dest && !route.status && !route.handle) route.continue = true;
+}
 config.routes = [
   { src, status: 404, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } },
   ...(config.routes ?? []).filter(route => route.src !== src),

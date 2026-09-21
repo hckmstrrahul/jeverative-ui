@@ -6,7 +6,7 @@ Generate interfaces from a prompt using your component library. Jeverative combi
 
 ## Two ways to compose
 
-| | Jev-first | Adaptive |
+| | Jev-first | Hybrid |
 | --- | --- | --- |
 | Best for | Composing within the prepared library | Prompt-specific content and more open-ended interfaces |
 | Jev owns | Element selection, layout, grouping, order and supported property choices | Page arrangement, density and surfaces |
@@ -31,7 +31,7 @@ The candidate builder exposes reusable elements and semantic groups with known p
 
 Supplied names, copy, fields, metrics, charts and tables can replace sample content. Property configuration is bounded: Jev chooses supported values rather than inventing arbitrary props. Variations preserve selected content while changing eligible arrangements and grouping. No text model is called, including when a request is unsupported.
 
-### Adaptive
+### Hybrid
 
 ```mermaid
 flowchart LR
@@ -60,6 +60,6 @@ The renderer supports desktop, tablet and mobile previews. Interactions run loca
 
 **Jev-first** is for interfaces that can be expressed with the prepared component vocabulary and supplied data. It avoids text generation, but cannot invent unrestricted content or new component implementations.
 
-**Adaptive** is for requests needing more prompt-specific copy, data and component combinations. It keeps Jev’s layout plan while adding text generation and, when necessary, a bounded repair step.
+**Hybrid** is for requests needing more prompt-specific copy, data and component combinations. It keeps Jev’s layout plan while adding text generation and, when necessary, a bounded repair step.
 
 Compare relevance, layout, interactions, completion rate, latency and cost per usable screen. Valid output alone does not establish design quality, and the two architectures offer different levels of content flexibility.

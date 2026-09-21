@@ -71,6 +71,11 @@ type Result = {
 };
 const examplePrompts = [
   {
+    label: 'Flight booking',
+    prompt:
+      'Create a desktop flight booking UI with route and dates, passenger count, flight choices and fare options.',
+  },
+  {
     label: 'Stay discovery',
     prompt:
       'Design an Airbnb-style homepage feed with destination, date and guest controls, categories and six illustrated stay listings with prices, ratings and save actions.',
@@ -732,7 +737,7 @@ export default function Home() {
               <div className="connection-choices">
                 {[
                   { id: 'server', label: 'Default key' },
-                  { id: 'manual', label: 'My key' },
+                  { id: 'manual', label: 'Enter your key' },
                 ].map((option) => (
                   <label
                     key={option.id}
@@ -818,7 +823,7 @@ export default function Home() {
               <div className="connection-choices">
                 {[
                   { id: 'jev-first', label: 'Jev-first' },
-                  { id: 'hybrid', label: 'Adaptive' },
+                  { id: 'hybrid', label: 'Hybrid' },
                 ].map((option) => (
                   <label key={option.id} className="connection-choice">
                     <input

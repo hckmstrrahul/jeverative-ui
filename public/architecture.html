@@ -10,10 +10,10 @@
 <body><main>
 <div class="brand">jeverative / architecture</div>
 <h1>One library.<br>Two ways to compose.</h1>
-<p class="intro">Jev-first arranges configurable prepared elements. Adaptive uses Jev for the layout and a text model for prompt-specific content. Both render through the same styled component system.</p>
+<p class="intro">Jev-first arranges configurable prepared elements. Hybrid uses Jev for the layout and a text model for prompt-specific content. Both render through the same styled component system.</p>
 <div class="tabs" role="group" aria-label="Architecture">
 <button type="button" aria-pressed="true" aria-controls="jev-first" data-mode="jev-first">Jev-first</button>
-<button type="button" aria-pressed="false" aria-controls="adaptive" data-mode="adaptive">Adaptive</button>
+<button type="button" aria-pressed="false" aria-controls="adaptive" data-mode="adaptive">Hybrid</button>
 </div>
 <section class="panel" id="jev-first" aria-labelledby="first-title">
 <h2 id="first-title">Choose. Configure. Arrange.</h2>
@@ -39,13 +39,13 @@
 <div class="step"><small>04 · Local code</small><h3>Validate and render</h3><p>Frame events across chunks, normalize supported formats and check properties, graph structure and bindings. Show drafts as they arrive.</p></div>
 </div>
 <p class="note">Correction is conditional: local fixes run first. If needed and auto-fix is enabled, the same text model gets one targeted repair attempt. Jev is not called again. An invalid result cannot replace the saved completed screen.</p>
-<div class="shared"><strong>More flexible content, with more generation work.</strong><p>The text model uses registered components; it does not create new React implementations. Adaptive’s API identifier is <code>hybrid</code>. There is no silent model upgrade or engine fallback.</p></div>
+<div class="shared"><strong>More flexible content, with more generation work.</strong><p>The text model uses registered components; it does not create new React implementations. Hybrid’s API identifier is <code>hybrid</code>. There is no silent model upgrade or engine fallback.</p></div>
 </section>
 <div class="split">
 <section><h2>The shared foundation</h2><ul><li>React and shadcn/ui adapters render validated documents.</li><li>Styling is applied to typography, colors, spacing and icons.</li><li>Desktop, tablet and mobile constraints shape the canvas.</li><li>Local state supports prototype controls and registered interactions.</li><li>Curated reference rules guide composition; Mobbin is not queried during generation.</li></ul></section>
-<section><h2>What to measure</h2><p>Compare completion, relevance, layout, interactions, latency and cost per usable screen. Jev-first avoids text generation but has narrower content coverage. Adaptive adds text-token costs and possible correction latency. Missing usage data is not zero cost.</p></section>
+<section><h2>What to measure</h2><p>Compare completion, relevance, layout, interactions, latency and cost per usable screen. Jev-first avoids text generation but has narrower content coverage. Hybrid adds text-token costs and possible correction latency. Missing usage data is not zero cost.</p></section>
 </div>
-<footer>Current playground modes: Jev-first and Adaptive. No generated JavaScript is executed. Sample data and local actions are prototypes, not live business integrations. The preview timer reports server duration, excluding browser rendering and network overhead.</footer>
+<footer>Current playground modes: Jev-first and Hybrid. No generated JavaScript is executed. Sample data and local actions are prototypes, not live business integrations. The preview timer reports server duration, excluding browser rendering and network overhead.</footer>
 </main><script>
 for (const button of document.querySelectorAll('[data-mode]')) {
   button.addEventListener('click', () => {

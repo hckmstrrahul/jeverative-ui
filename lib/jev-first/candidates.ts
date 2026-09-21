@@ -1,3 +1,4 @@
+import { bookingCandidates } from './booking';
 import { validateDocument, type UIDocument, type UINode } from '../tree/spec';
 
 export type Candidate = {
@@ -755,5 +756,11 @@ export function buildCandidates(
       'text',
       { text },
     );
+  const booking = bookingCandidates(prompt, previous);
+  if (booking.length)
+    return [
+      ...booking,
+      ...out.filter((c) => ['payment', 'coupon'].includes(c.id)),
+    ];
   return out;
 }

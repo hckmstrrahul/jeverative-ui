@@ -582,3 +582,53 @@ assert.equal(
   ),
   false,
 );
+
+// Known booking domains expose usable inventory before bypassing the generic gate.
+for (const prompt of [
+  'flight booking UI',
+  'train booking UI',
+  'bus booking UI',
+  'car rental UI',
+  'restaurant reservation UI',
+  'concert tickets UI',
+  'doctor appointment UI',
+]) {
+  const prepared = buildCandidates(prompt);
+  const bookingIds = prepared
+    .filter((c) => c.id.startsWith('booking_'))
+    .map((c) => c.id);
+  assert.ok(bookingIds.length >= 4, prompt);
+  for (const device of ['desktop', 'tablet', 'mobile'] as const) {
+    const events = [];
+    const base = evaluator(bookingIds);
+    for await (const event of composeJevFirst({
+      prompt,
+      device,
+      signal: new AbortController().signal,
+      evaluate: async (q, state, signal) => {
+        assert.equal(q.supported, undefined);
+        return base(q, state, signal);
+      },
+    }))
+      events.push(event);
+    const complete = events.at(-1);
+    assert.equal(complete?.type, 'complete', prompt);
+    if (complete?.type !== 'complete')
+      throw Error('Expected booking completion');
+    validateDocument(complete.document);
+    const nodes = complete.document.nodes;
+    const search = nodes.findIndex((n) => n.id.endsWith('_search'));
+    const results = nodes.findIndex((n) => n.id.endsWith('_results'));
+    assert.ok(search >= 0 && results > search);
+    assert.ok(
+      renderToStaticMarkup(
+        <TreeRenderer document={complete.document} />,
+      ).includes('Sample options'),
+    );
+    assert.equal(complete.metrics.textMs, 0);
+    assert.equal(complete.metrics.repairs, 0);
+  }
+}
+console.log(
+  'Seven booking domains × three devices compile and render without text calls or correction.',
+);
