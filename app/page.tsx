@@ -10,8 +10,8 @@ import { documentScreen } from '@/lib/tree/screen';
 import { DEFAULT_TEXT_MODEL, TEXT_MODELS } from '@/lib/tree/models';
 import type { TextUsage } from '@/lib/tree/usage';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { CornerDownLeft } from 'lucide-react';
 import {
-  ArrowUp,
   KeyRound,
   Monitor,
   RotateCcw,
@@ -20,7 +20,6 @@ import {
   Sparkles,
   Tablet,
   X,
-  Zap,
 } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +68,23 @@ type Result = {
   };
   model?: string;
 };
+const exampleColors = [
+  'text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50',
+  'text-violet-700 hover:text-violet-800 hover:bg-violet-50',
+  'text-green-700 hover:text-green-800 hover:bg-green-50',
+  'text-teal-700 hover:text-teal-800 hover:bg-teal-50',
+  'text-yellow-700 hover:text-yellow-800 hover:bg-yellow-50',
+  'text-blue-700 hover:text-blue-800 hover:bg-blue-50',
+  'text-purple-700 hover:text-purple-800 hover:bg-purple-50',
+  'text-amber-700 hover:text-amber-800 hover:bg-amber-50',
+  'text-fuchsia-700 hover:text-fuchsia-800 hover:bg-fuchsia-50',
+  'text-cyan-700 hover:text-cyan-800 hover:bg-cyan-50',
+  'text-red-700 hover:text-red-800 hover:bg-red-50',
+  'text-lime-700 hover:text-lime-800 hover:bg-lime-50',
+  'text-orange-700 hover:text-orange-800 hover:bg-orange-50',
+  'text-pink-700 hover:text-pink-800 hover:bg-pink-50',
+];
+
 const examplePrompts = [
   {
     label: 'Stock detail',
@@ -81,16 +97,6 @@ const examplePrompts = [
       'Personal portfolio website with selected projects, about, expertise and contact.',
   },
 
-  {
-    label: 'Flight booking',
-    prompt:
-      'Create a desktop flight booking UI with route and dates, passenger count, flight choices and fare options.',
-  },
-  {
-    label: 'Stay discovery',
-    prompt:
-      'Design an Airbnb-style homepage feed with destination, date and guest controls, categories and six illustrated stay listings with prices, ratings and save actions.',
-  },
   {
     label: 'Banking overview',
     prompt:
@@ -110,6 +116,16 @@ const examplePrompts = [
     label: 'Sales dashboard',
     prompt:
       'Create a desktop sales dashboard with a left sidebar, date filter, three key metrics, revenue chart and recent orders table with search, status filters and pagination. Keep the layout compact and aligned.',
+  },
+  {
+    label: 'Stay discovery',
+    prompt:
+      'Design an Airbnb-style homepage feed with destination, date and guest controls, categories and six illustrated stay listings with prices, ratings and save actions.',
+  },
+  {
+    label: 'Flight booking',
+    prompt:
+      'Create a desktop flight booking UI with route and dates, passenger count, flight choices and fare options.',
   },
   {
     label: 'Task board',
@@ -500,28 +516,21 @@ export default function Home() {
               <div>
                 <h1>Jeverative Interfaces</h1>
                 <p>
-                  Jev demo by{' '}
+                  Generating UI using Jev decision model; hooked to shadcn components
+                  <br />
+                  with custom styling, and some general design rules from Mobbin MCP.{' · '}
                   <a
                     href="https://x.com/hckmstrrahul"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-4 hover:text-foreground"
                   >
-                    @hckmstrrahul
+                    X
                   </a>
                 </p>
               </div>
               <div className="studio-actions">
-                <Tabs value={engine} onValueChange={(value) => {
-                  if (value !== 'jev-first' && value !== 'hybrid') return;
-                  cancel();
-                  setEngine(value);
-                }}>
-                  <TabsList aria-label="Composition mode">
-                    <TabsTrigger value="jev-first">Jev-only</TabsTrigger>
-                    <TabsTrigger value="hybrid">Jev + LLM</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+
               <Button
                 className="studio-connect"
                 variant="outline"
@@ -574,25 +583,39 @@ export default function Home() {
                 aria-label="Describe your interface"
               />
               <div className="composer-bottom">
-                <span>
-                  <Zap size={14} />
-                  {live
-                    ? engine === 'hybrid'
-                      ? 'Jev + LLM · OpenRouter'
-                      : engine === 'llm'
-                        ? 'LLM · OpenRouter'
-                        : 'Jev-only · OpenRouter'
-                    : 'Connect OpenRouter to start'}
-                </span>
+                <Tabs className="composer-mode" value={engine} onValueChange={(value) => {
+                  if (value !== 'jev-first' && value !== 'hybrid') return;
+                  cancel();
+                  setEngine(value);
+                }}>
+                  <TabsList aria-label="Composition mode">
+                    <Tooltip>
+                      <TooltipTrigger render={<TabsTrigger type="button" value="jev-first" />}>
+                        Jev-only
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span>Jev selects and arranges prepared UI.<br />Fast composition from the component library.</span>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger render={<TabsTrigger type="button" value="hybrid" />}>
+                        Jev + LLM
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span>Jev plans; a text model generates the UI.<br />More flexible content and combinations.</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TabsList>
+                </Tabs>
                 <div className="flex items-center gap-3">
-                  <span className="composer-hint">↵ to compose</span>
+                  <span className="composer-hint inline-flex items-center gap-1"><CornerDownLeft size={14} aria-hidden="true" /> to compose</span>
                   {busy ? (
-                    <Button type="button" variant="outline" onClick={cancel}>
+                    <Button className="composer-submit" type="button" variant="outline" onClick={cancel}>
                       Cancel
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={!prompt.trim()}>
-                      <ArrowUp />
+                    <Button className="composer-submit" type="submit" disabled={!prompt.trim()}>
+                      <CornerDownLeft className="size-5" aria-hidden="true" />
                       Compose
                     </Button>
                   )}
@@ -600,9 +623,10 @@ export default function Home() {
               </div>
             </form>
             <div className="prompt-suggestions">
-              {examplePrompts.map(({ label, prompt: example }) => (
+              {examplePrompts.map(({ label, prompt: example }, index) => (
                 <Button
                   key={label}
+                  className={exampleColors[index % exampleColors.length]}
                   variant="ghost"
                   size="sm"
                   onClick={() => {
