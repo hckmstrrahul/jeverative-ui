@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process';
 await mkdir('node_modules/.cache',{recursive:true});
 // Run middleware without Vinext aliases, matching Vercel's separate bundle.
 await build({entryPoints:['middleware.ts'],outfile:'node_modules/.cache/middleware-runtime.mjs',bundle:true,platform:'node',format:'esm',packages:'external'});
-const {middleware}=await import('../node_modules/.cache/middleware-runtime.mjs');
+const {default:middleware}=await import('../node_modules/.cache/middleware-runtime.mjs');
 const {default:assert}=await import('node:assert/strict');
 const response=middleware();
 assert.equal(response.headers.get('x-middleware-next'),'1');
