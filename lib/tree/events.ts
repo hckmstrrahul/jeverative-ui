@@ -1,3 +1,4 @@
+import { attachVisibility } from './visibility';
 /** Decode equivalent transport envelopes, never change component data or guess events. */
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -12,6 +13,8 @@ export function normalizeUIEvent(
   if (!record(raw)) throw new Error('UI event must be an object.');
   if (depth > 4) throw new Error('UI event wrappers are nested too deeply.');
   const keys = Object.keys(raw);
+  if (keys.length === 2 && record(raw.node) && Object.hasOwn(raw, 'when'))
+    return { event: { node: attachVisibility(raw.node, raw.when) }, adjusted: true };
   // Unwrap only unambiguous transport containers. Do not discard sibling fields.
   if (
     keys.length === 1 &&
@@ -54,6 +57,11 @@ export function normalizeUIEvent(
         type === 'screen'
           ? ['screen', 'metadata', 'data', 'payload']
           : ['node', 'data', 'payload'];
+      if (type === 'node' && payloadKeys.length === 2 && Object.hasOwn(payload, 'when')) {
+        const wrapper = wrappers.find(key => record(payload[key]));
+        if (wrapper)
+          return { event: { node: attachVisibility(payload[wrapper] as Record<string, unknown>, payload.when) }, adjusted: true };
+      }
       if (payloadKeys.length === 1 && wrappers.includes(payloadKeys[0]))
         return { event: { [type]: payload[payloadKeys[0]] }, adjusted: true };
       if (

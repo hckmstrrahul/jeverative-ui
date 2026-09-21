@@ -2214,3 +2214,44 @@ for (const n of [node('page',null,'page'),node('row','page','stack',{direction:'
   blankContext.push(JSON.stringify({node:n}));
 blankContext.push('{"done":true}');
 assert.equal(blankContext.finish().nodes.find(n=>n.id==='returnValue')?.props.label,'Return Value');
+
+// Benchmark regressions: Qwen emits when beside node or inside props.
+const securityWhen = {key:'section',equals:'Security'};
+const sectionPanel = node('sec-panel','page','panel',{title:'Security'});
+function visibilityStream() {
+  const parser = new DocumentStream([],metadata);
+  for(const n of [node('page',null,'page'),node('sections','page','tabs',{
+    label:'Settings',bind:'section',options:['Security','Notifications'],value:'Security',
+  })]) parser.push(JSON.stringify({node:n}));
+  return parser;
+}
+for(const misplaced of [
+  {node:sectionPanel,when:securityWhen},
+  {type:'node',node:sectionPanel,when:securityWhen},
+  {event:'node',data:sectionPanel,when:securityWhen},
+  {node:{...sectionPanel,props:{...sectionPanel.props,when:securityWhen}}},
+  {node:{...sectionPanel,when:securityWhen,props:{...sectionPanel.props,when:{equals:'Security',key:'section'}}}},
+]) {
+  const parser=visibilityStream();
+  parser.push(JSON.stringify(misplaced));
+  parser.push('{"done":true}');
+  const document=parser.finish();
+  const panel=document.nodes.find(n=>n.id==='sec-panel')!;
+  assert.deepEqual(panel.when,securityWhen);
+  assert.deepEqual(panel.props,{title:'Security'});
+  const repair=new DocumentStream([],undefined,document);
+  repair.push(JSON.stringify(misplaced));
+  repair.push('{"done":true}');
+  assert.deepEqual(repair.finish(),document);
+}
+for(const invalid of [
+  {node:{...sectionPanel,when:securityWhen},when:{key:'section',equals:'Notifications'}},
+  {node:{...sectionPanel,when:securityWhen,props:{...sectionPanel.props,when:{key:'section',equals:'Notifications'}}}},
+  {node:sectionPanel,when:{key:'missing',equals:'Security'}},
+  {node:sectionPanel,when:{key:'section',equals:true}},
+  {node:sectionPanel,when:{key:'section',equals:'Security',execute:'anything'}},
+  {node:sectionPanel,when:securityWhen,execute:'anything'},
+  {node:{...sectionPanel,props:{...sectionPanel.props,when:null}}},
+]) assert.throws(()=>{
+  const parser=visibilityStream();parser.push(JSON.stringify(invalid));parser.push('{"done":true}');parser.finish();
+});

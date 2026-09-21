@@ -124,6 +124,9 @@ for (let repetition = 0; repetition < repeats; repetition++) {
         row.compositionVersion = terminal?.compositionVersion;
         row.error = terminal?.message;
         row.diagnostic = terminal?.diagnostic;
+        row.repairDiagnostics = events
+          .filter((event) => event.type === 'status' && event.targetedRepair)
+          .map(({ reason, diagnostic }) => ({ reason, diagnostic }));
       } catch (error) {
         row.error = error.message;
       }

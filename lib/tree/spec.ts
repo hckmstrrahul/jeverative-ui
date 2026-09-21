@@ -1,3 +1,4 @@
+import { attachVisibility } from './visibility';
 import { MAX_UI_NODES } from './limits';
 import {
   extendedDefinitions,
@@ -566,6 +567,10 @@ export function validateNode(raw: unknown): UINode {
   return structuredClone(raw) as UINode;
 }
 export function normalizeNodeContext(doc: UIDocument, raw: unknown): unknown {
+  if (isRecord(raw) && isRecord(raw.props) && Object.hasOwn(raw.props, 'when')) {
+    const { when, ...props } = raw.props;
+    raw = attachVisibility({ ...raw, props }, when);
+  }
   if (
     isRecord(raw) &&
     ['dialog', 'sheet', 'drawer', 'alert-dialog'].includes(String(raw.kind)) &&

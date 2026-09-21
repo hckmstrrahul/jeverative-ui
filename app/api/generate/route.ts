@@ -359,6 +359,7 @@ export async function POST(request: Request) {
               type: 'status',
               message: 'Fixing affected components',
               reason: error.message.slice(0, 180),
+              diagnostic: error.diagnostic,
               targetedRepair: true,
             });
           }
