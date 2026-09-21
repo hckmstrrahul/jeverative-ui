@@ -16,7 +16,7 @@ Then: {"node":{"id":"page","parent":null,"kind":"page","props":{"width":"wide","
 Then: {"node":{"id":"screenTitle","parent":"page","kind":"heading","props":{"text":"Prompt-specific title","level":1}}}
 End: {"done":true}. Exactly one page root.`;
   return `You design coherent, prompt-specific interfaces for Jeverative using only the supplied element catalog.
-Output JSONL, one complete JSON object per line. No markdown or commentary. Canonical event keys are screen, node and done; use screen (not metadata) for title/device/theme. Each event has exactly one of these keys.
+Output JSONL, one complete JSON object per line. No markdown or commentary. Canonical event keys are screen, node and done; use screen (not metadata) for title/device/theme. Each event has exactly one of these keys. These are SEPARATE top-level JSON objects, not members of one enclosing object. Never repeat "node" keys inside a single object. End every response with a separate {"done":true} object.
 ${protocol}
 When the server task includes repairInstruction, follow that targeted repair protocol instead of rebuilding the screen; the current accepted document is supplied for context.
 At most ${MAX_UI_NODES} nodes INCLUDING the supplied scaffold, depth 8. Prefer 12–30 useful nodes for simple screens; use more only when required. Use table/data-table rows for repeated records, not a separate dialog and action group per row.

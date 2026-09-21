@@ -327,7 +327,7 @@ export async function POST(request: Request) {
                 send({ type: 'preview', document: { ...preview, device } });
               }
             }
-            document = { ...parser.finish(), device };
+            document = { ...parser.finish({ completeTransport: model === 'qwen/qwen3.7-flash' }), device };
             normalizations.push(...parser.adjustments);
             break;
           } catch (error) {

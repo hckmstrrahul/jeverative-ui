@@ -695,7 +695,7 @@ export function appendNode(doc: UIDocument, raw: unknown): UIDocument {
   } else {
     const parent = doc.nodes.find((n) => n.id === node.parent);
     if (!parent || !isContainer(parent.kind) || node.kind === 'page')
-      throw new Error('Invalid parent.');
+      throw new Error(`Invalid parent for ${node.id}: ${String(node.parent)}${parent ? ` (${parent.kind}) cannot contain this node` : ' does not exist'}. Use an existing container id and emit parents before children; do not add another page root.`);
     let depth = 1,
       ancestor: UINode | undefined = parent;
     while (ancestor) {
@@ -843,6 +843,7 @@ export function validateDocument(raw: unknown, complete = true): UIDocument {
             target.id === n.props.target &&
             [
               'input',
+              'date-picker',
               'textarea',
               'select',
               'native-select',

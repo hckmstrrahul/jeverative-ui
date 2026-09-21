@@ -25,10 +25,26 @@ export const TEXT_MODELS = [
 export const DEFAULT_TEXT_MODEL = TEXT_MODELS[0].id;
 export function textModelOptions(model: string) {
   return TEXT_MODELS.some((m) => m.id === model)
-    ? { reasoning: { enabled: false } }
+    ? {
+        reasoning: { enabled: false },
+        ...(model === 'qwen/qwen3.7-flash'
+          ? { response_format: { type: 'json_object' }, provider: { require_parameters: true } }
+          : {}),
+      }
     : {};
 }
 export function systemMessage(model: string, text: string) {
+  if (model === 'qwen/qwen3.7-flash') {
+    const parent = text.includes('JEV CONTENT PROTOCOL') ? 'jevHeader' : 'page';
+    const example = JSON.stringify({events: [
+      {screen: {title: 'Example', device: 'desktop', theme: 'light'}},
+      ...(parent === 'page' ? [{node: {id: 'page', parent: null, kind: 'page', props: {}}}] : []),
+      {node: {id: 'title', parent, kind: 'heading', props: {text: 'Example', level: 1}}},
+      {done: true},
+    ]});
+    text += '\nTRANSPORT OVERRIDE FOR JSON MODE: Return exactly one JSON object with one key, "events", containing an array of the canonical event objects described above. Example: ' + example + '. Keep all nodes in parent-first order. Do not put repeated node keys in one object. Include {"done":true} as the last array item. On targeted repair use the same events array, containing only changed/new nodes or remove events and done. This transport overrides the JSONL instruction, not component or scaffold rules.';
+  }
+
   // Keep the rules as a stable prefix, including on correction calls. Moonshot
   // caches automatically; only explicitly mark the supported Claude prefix.
   return {

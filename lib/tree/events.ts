@@ -114,3 +114,54 @@ export function screenMetadata(
     theme: metadata.theme,
   };
 }
+
+/** Recover canonical events grouped into one object without losing repeated node keys.
+ * JSON.parse alone overwrites duplicate keys, so split the original member text.
+ * Unknown siblings and typed/payload envelopes remain strict single events.
+ */
+export function splitUIEventBatch(source: string): string[] {
+  try {
+    const parsed = JSON.parse(source); // Reject malformed syntax before recovery.
+    if (record(parsed) && Object.keys(parsed).length === 1 && Array.isArray(parsed.events)) {
+      if (!parsed.events.length || parsed.events.length > 1024)
+        throw new Error('Invalid event batch size.');
+      // Each child goes through the same strict envelope and document validation.
+      const events = parsed.events.map((event: unknown) => JSON.stringify(event));
+      // A closed events array is an explicit document boundary. A model may omit
+      // the redundant done item; run the same final validation locally instead
+      // of paying for a correction whose entire response is {done:true}.
+      if (!parsed.events.some((event: unknown) => record(event) &&
+        ('done' in event || event.type === 'done' || event.event === 'done')))
+        events.push('{"done":true}');
+      return events;
+    }
+  } catch {
+    return [source]; // The normal parser supplies its validation diagnostic.
+  }
+  const text = source.trim();
+  if (!text.startsWith('{') || !text.endsWith('}')) return [source];
+  const members: string[] = [];
+  let depth = 0, quoted = false, escaped = false, start = 1;
+  for (let i = 1; i < text.length - 1; i++) {
+    const char = text[i];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') quoted = false;
+    } else if (char === '"') quoted = true;
+    else if (char === '{' || char === '[') depth++;
+    else if (char === '}' || char === ']') depth--;
+    else if (char === ',' && depth === 0) {
+      members.push(`{${text.slice(start, i)}}`);
+      start = i + 1;
+    }
+  }
+  members.push(`{${text.slice(start, -1)}}`);
+  if (members.length < 2) return [source];
+  const canonical = ['screen', 'node', 'remove', 'done'];
+  if (!members.every(member => {
+    const keys = Object.keys(JSON.parse(member));
+    return keys.length === 1 && canonical.includes(keys[0]);
+  })) return [source];
+  return members;
+}

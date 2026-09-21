@@ -1,7 +1,7 @@
 import { MAX_UI_NODES } from './limits';
 import { normalizePresentation } from './presentation';
 import { omitEmptySupport } from './slots';
-import { normalizeUIEvent, screenMetadata } from './events';
+import { normalizeUIEvent, screenMetadata, splitUIEventBatch } from './events';
 import {
   appendNode,
   normalizeNodeContext,
@@ -165,8 +165,13 @@ export class DocumentStream {
       if (end < 0) break;
       const object = this.buffer.slice(0, end);
       this.buffer = this.buffer.slice(end);
-      const snapshot = this.line(object);
-      if (snapshot) snapshots.push(snapshot);
+      const events = splitUIEventBatch(object);
+      if (events.length > 1)
+        this.note('Unpacked grouped UI events without discarding repeated nodes.');
+      for (const event of events) {
+        const snapshot = this.line(event);
+        if (snapshot) snapshots.push(snapshot);
+      }
     }
     return snapshots;
   }
@@ -437,9 +442,13 @@ export class DocumentStream {
         : `Unknown UI event ${Object.keys(event).join(', ')}. Use screen, node or done.`,
     );
   }
-  finish(): UIDocument {
+  finish(options: { completeTransport?: boolean } = {}): UIDocument {
     if (this.buffer.trim()) this.line(this.buffer.trim());
     this.buffer = '';
+    // Only the server opts in after chatText has consumed a clean provider end.
+    // Complete JSON + a valid document can finish locally when Qwen omits done.
+    if (options.completeTransport && !this.finished && this.document)
+      this.line('{"done":true}');
     if (!this.finished || !this.document)
       throw new UIValidationError(
         'UI stream was incomplete; include the done event.',

@@ -1394,6 +1394,41 @@ for (const bad of [
     new DocumentStream([], fallbackMeta).push(JSON.stringify(bad)),
   );
 
+// Qwen can group JSONL events in one object with repeated node keys. Preserve all
+// occurrences from the raw text, including braces and commas inside props.
+const groupedNodes = nodes.map(n => ({ ...n, props: { ...n.props } }));
+const groupedEvents = '{"screen":' + JSON.stringify(eventMetadata) + ',' +
+  groupedNodes.map(n => '"node":' + JSON.stringify(n)).join(',') + ',"done":true}';
+for (const chunkSize of [1, 7, groupedEvents.length]) {
+  const parser = new DocumentStream();
+  for (let i = 0; i < groupedEvents.length; i += chunkSize)
+    parser.push(groupedEvents.slice(i, i + chunkSize));
+  assert.deepEqual(parser.finish(), doc);
+  assert.ok(parser.adjustments.some(note => note.includes('Unpacked grouped')));
+}
+const batchParser = new DocumentStream();
+const arrayBatch = JSON.stringify({events:[{screen:eventMetadata},...nodes.map(node=>({node})),{done:true}]});
+for(let i=0;i<arrayBatch.length;i+=3) batchParser.push(arrayBatch.slice(i,i+3));
+assert.deepEqual(batchParser.finish(),doc);
+const closedBatch = new DocumentStream();
+closedBatch.push(JSON.stringify({events:[{screen:eventMetadata},...nodes.map(node=>({node}))]}));
+assert.deepEqual(closedBatch.finish(),doc);
+const truncatedBatch = new DocumentStream();
+truncatedBatch.push(arrayBatch.slice(0,-2));
+assert.throws(()=>truncatedBatch.finish());
+
+for(const events of [[], [null], [{execute:'anything'}], [{done:true},{node:nodes[0]}]])
+  assert.throws(()=>new DocumentStream().push(JSON.stringify({events})));
+const groupedRepair = new DocumentStream([], undefined, doc);
+groupedRepair.push('{"node":' + JSON.stringify(nodes[1]) + ',"done":true}');
+assert.deepEqual(groupedRepair.finish(), doc);
+for (const source of [
+  '{"screen":' + JSON.stringify(eventMetadata) + ',"execute":"anything","done":true}',
+  '{"screen":' + JSON.stringify(eventMetadata) + ',"node":' + JSON.stringify({...nodes[0],kind:'unknown-component'}) + ',"done":true}',
+  groupedEvents.replace(',"done":true}', ',"done":true,"node":' + JSON.stringify(nodes[1]) + '}'),
+  groupedEvents.replace(',"done":true}', ',"done":true,}'),
+]) assert.throws(() => new DocumentStream().push(source));
+
 // Equivalent node/done wrappers still pass through full node and graph validation.
 for (const wrapper of ['data', 'payload']) {
   const parser = new DocumentStream();
@@ -2054,6 +2089,9 @@ assert.equal(DEFAULT_TEXT_MODEL, 'qwen/qwen3.7-flash');
 for (const model of TEXT_MODELS)
   assert.deepEqual(textModelOptions(model.id), {
     reasoning: { enabled: false },
+    ...(model.id === DEFAULT_TEXT_MODEL ? {
+      response_format: { type: 'json_object' }, provider: { require_parameters: true },
+    } : {}),
   });
 assert.deepEqual(textModelOptions('custom/model'), {});
 const claudeSystem = systemMessage(
@@ -2063,10 +2101,9 @@ const claudeSystem = systemMessage(
 assert.deepEqual(claudeSystem.content, [
   { type: 'text', text: 'Stable rules', cache_control: { type: 'ephemeral' } },
 ]);
-assert.equal(
-  systemMessage(DEFAULT_TEXT_MODEL, 'Stable rules').content,
-  'Stable rules',
-);
+const qwenSystem = systemMessage(DEFAULT_TEXT_MODEL, 'Stable rules').content;
+assert.equal(typeof qwenSystem, 'string');
+assert.match(qwenSystem as string, /TRANSPORT OVERRIDE FOR JSON MODE/);
 const usageChunks: unknown[] = [];
 for await (const _ of chatText(
   new ReadableStream({
@@ -2129,3 +2166,24 @@ assert.throws(
     ),
   /missing props.bind/,
 );
+
+// Date pickers render a native input with tree-{id}; external labels may target it.
+const labeledDate = {
+  ...metadata,
+  nodes: [nodes[0],
+    node('dateLabel', nodes[0].id, 'label', { text: 'Meeting date', target: 'meetingDate' }),
+    node('meetingDate', nodes[0].id, 'date-picker', { label: 'Meeting date', bind: 'meetingDate' }),
+  ],
+};
+assert.doesNotThrow(() => validateDocument(labeledDate));
+assert.throws(() => validateDocument({ ...labeledDate, nodes: [nodes[0],
+  labeledDate.nodes[1], node('meetingDate', nodes[0].id, 'text', { text: 'Not an input' }),
+]}), /label target/);
+
+const cleanProviderEnd = new DocumentStream();
+cleanProviderEnd.push(uiLines.slice(0,-1).join('\n'));
+assert.deepEqual(cleanProviderEnd.finish({completeTransport:true}),doc);
+assert.throws(()=>new DocumentStream([],fallbackMeta).finish({completeTransport:true}));
+const truncatedProviderEnd=new DocumentStream();
+truncatedProviderEnd.push('{"node":');
+assert.throws(()=>truncatedProviderEnd.finish({completeTransport:true}));
