@@ -577,9 +577,7 @@ export default function Home() {
                   ) : (
                     <Button type="submit" disabled={!prompt.trim()}>
                       <ArrowUp />
-                      {Boolean(lastPrompt) && lastPrompt === prompt.trim()
-                        ? 'New variation'
-                        : 'Compose'}
+                      Compose
                     </Button>
                   )}
                 </div>
