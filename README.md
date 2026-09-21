@@ -52,6 +52,8 @@ Local normalization runs before paid correction. If validation still fails and *
 
 ## Shared rendering layer
 
+Both architectures call OpenRouter through server routes. Production can use the configured server-side default key; visitors may choose their own key instead. The default credential is never returned to the browser.
+
 Both architectures use registered React components, with styling applied to typography, colors, spacing and responsive layouts. Local validation checks component properties, document structure and interaction bindings before a completed screen is saved.
 
 The renderer supports desktop, tablet and mobile previews. Interactions run locally as prototypes; neither architecture creates a business backend or executes model-generated JavaScript.
