@@ -655,7 +655,19 @@ export function buildCandidates(
         tag: 'Guest favourite',
       },
     );
-  const quoted = [...prompt.matchAll(/["“]([^"”\n]{1,100})["”]/g)]
+  // Generic search and domain-specific search are alternatives, not peers.
+  out.find((c) => c.id === 'stay_search')!.resource = 'search';
+  const copyPrompt = prompt
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(
+      /^(?:name|email|role|bio|title|heading|primary label|destination)\s*:.*$/gim,
+      '',
+    )
+    .replace(
+      /(?:title|heading|profile for|named|name|role|primary label|button label)(?:\s+(?:to|is|as))?\s*["“][^"”\n]*["”]/gi,
+      '',
+    );
+  const quoted = [...copyPrompt.matchAll(/["“]([^"”\n]{1,100})["”]/g)]
     .map((m) => m[1])
     .slice(0, 4);
   for (const [i, text] of quoted.entries())

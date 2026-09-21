@@ -394,6 +394,8 @@ export async function* composeJevFirst(
     : candidates.filter(
         (c) => c.required || chosen[`use_${c.resource ?? c.id}`] === c.id,
       );
+  if (selected.some((c) => c.id === 'stay_search'))
+    selected = selected.filter((c) => c.id !== 'search');
   if (!selected.length)
     throw new Error(
       'Jev selected no content. Refine the request or try Hybrid.',

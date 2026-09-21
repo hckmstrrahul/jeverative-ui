@@ -563,3 +563,22 @@ assert.deepEqual(
     .filter((n) => n.kind === 'listing-card')
     .map((n) => n.props),
 );
+
+assert.equal(
+  buildCandidates('airbnb homepage feed').find((c) => c.id === 'stay_search')
+    ?.resource,
+  'search',
+);
+
+assert.equal(
+  buildCandidates(
+    'Create a form\n```json\n{"title":"Project intake","primaryLabel":"Save project"}\n```',
+  ).some((c) => c.id.startsWith('quoted_')),
+  false,
+);
+assert.equal(
+  buildCandidates('Profile for "Rahul" with heading "Account"').some((c) =>
+    c.id.startsWith('quoted_'),
+  ),
+  false,
+);

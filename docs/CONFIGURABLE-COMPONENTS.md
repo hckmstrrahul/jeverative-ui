@@ -60,3 +60,9 @@ Destination and category controls filter the local cards. Saved state survives f
 `/qa/jev-first` is a deterministic gallery using the real compiler and renderer with mocked decisions and no API calls. The contract suite covers supplied data, defaults, malformed data, property choices, variation preservation, responsive feeds and filter behavior. Browser QA also checks filtering, save state and empty results.
 
 The engine remains bounded by prepared components and supported properties. It does not yet configure every installed shadcn component or invent domain-specific content. Unfamiliar domains can use explicit fields/datasets; brand-specific app structure still requires suitable prepared candidates. Valid output and good defaults do not guarantee every Jev choice is relevant.
+
+## Live verification — 2026-09-21
+
+The exact prompt `airbnb homepage feed` completed in 1.88s using two Jev calls. Browser checks confirmed category filtering and saved state across filter changes. Visual QA caught a duplicate generic search box; generic and accommodation search now share one exclusive resource. A follow-up variation completed in 1.43s, preserved all six listings, changed three columns to two and removed the redundant search control. These are local smoke-test timings, not a broad latency benchmark.
+
+The supplied profile completed in 1.10s with the expected name and INR/USD balances. The custom form initially exposed duplicate copy parsed from its JSON block; quoted-copy extraction now excludes structured data and explicitly bound text. The retest completed in 1.42s with one heading, the three supplied fields in order and one save action. All of these runs used two Jev calls and no text-model call.
