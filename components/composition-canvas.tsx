@@ -199,7 +199,11 @@ export function CompositionCanvas({
   return (
     <MintThemeContext value={screen.theme}>
       <MintDataProvider
-        key={`${screen.recipe}-${screen.blueprint ?? 'default'}-${screen.contentMode ?? 'personal'}-${screen.settingsFocus ?? 'general'}-${resetVersion}`}
+        key={
+          screen.document
+            ? `document-${resetVersion}`
+            : `${screen.recipe}-${screen.blueprint ?? 'default'}-${screen.contentMode ?? 'personal'}-${screen.settingsFocus ?? 'general'}-${resetVersion}`
+        }
       >
         <div
           ref={stage}
@@ -231,9 +235,7 @@ export function CompositionCanvas({
                 <i />
               </div>
               <span>
-                {inspecting
-                  ? 'components / ' + inspecting
-                  : 'preview.jeverative.app'}
+                {inspecting ? 'components / ' + inspecting : '/preview'}
               </span>
               <Box size={13} />
             </div>

@@ -63,7 +63,7 @@ export function GenerationActivity({
               : 'Preparing a local preview'
       : completed
         ? metrics?.jevCalls
-          ? `${(metrics.totalMs / 1000).toFixed(2)}s · ${metrics.jevCalls} Jev calls · no LLM`
+          ? `${(metrics.totalMs / 1000).toFixed(2)}s · ${metrics.jevCalls} Jev calls`
           : 'Interface ready'
         : live
           ? 'Ready when you are'

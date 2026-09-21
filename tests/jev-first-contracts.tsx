@@ -103,7 +103,7 @@ for (const [name, device, ids] of fixtures) {
       events.push(event);
     assert.equal(calls.length, 2);
     const previews = events.filter((e) => e.type === 'preview');
-    assert.equal(previews.length, 2);
+    assert.equal(previews.length, 0);
     for (const preview of previews) validateDocument(preview.document);
     const end = events.at(-1);
     assert.equal(end?.type, 'complete');
@@ -124,7 +124,7 @@ for (const [name, device, ids] of fixtures) {
     assert.ok(end.document.nodes.some((n) => n.id === `jf_${ids[0]}`));
   }
 }
-// First preview arrives before the second evaluation resolves.
+// Keep loading until arrangement resolves; publish only the completed layout.
 let release!: () => void;
 const gate = new Promise<void>((r) => {
   release = r;
@@ -141,7 +141,7 @@ const iterator = composeJevFirst({
   },
 });
 let event = await iterator.next();
-while (event.value?.type !== 'preview') event = await iterator.next();
+while (event.value?.type !== 'plan') event = await iterator.next();
 assert.equal(rounds, 1);
 await iterator.next();
 const pending = iterator.next();
@@ -227,7 +227,7 @@ try {
   globalThis.fetch = originalFetch;
 }
 console.log(
-  'Jev-first: 8 scenarios × 2 themes, valid candidates, bounded batched composition, progressive preview, no text calls, rejection and cancellation pass.',
+  'Jev-first: 8 scenarios × 2 themes, valid candidates, bounded batched composition, atomic presentation, no text calls, rejection and cancellation pass.',
 );
 
 // Variation preserves content even when the evaluator would select something else.
@@ -273,7 +273,7 @@ assert.equal(
   beforeVariation.document.nodes.find((n) => n.id === 'jf_body')?.props.columns,
   1,
 );
-const single = await resultFor(['identity']);
+const single = await resultFor(['bio']);
 assert.equal(single.metrics.jevCalls, 1);
 // A failure during arrangement cannot emit a completed document.
 let secondCall = 0;
@@ -291,8 +291,275 @@ await assert.rejects(async () => {
     if (event.type === 'complete') completeSeen = true;
   }
 }, /invalid/);
-assert.ok(previewSeen);
+assert.equal(previewSeen, false);
 assert.equal(completeSeen, false);
 console.log(
   'Jev-first variation conservation, candidate ownership, compact metric rows, unused columns, single-call screens and arrangement failure pass.',
+);
+
+// Adversarial placements still obey semantic and viewport constraints.
+const { sensibleLayout, constrainPlacement } =
+  await import('../lib/jev-first/rules');
+const all = buildCandidates('Prototype');
+const chosenSet = (ids: string[]) => all.filter((c) => ids.includes(c.id));
+const dataSet = chosenSet([
+  'period',
+  'revenue',
+  'orders',
+  'customers',
+  'revenue_line',
+  'orders_table',
+]);
+assert.equal(sensibleLayout(dataSet, 'three-column', 'desktop'), 'stacked');
+assert.equal(sensibleLayout(dataSet, 'main-right', 'tablet'), 'stacked');
+const dataRules = constrainPlacement(dataSet, 'main-right', {
+  parent_period: 'a',
+  parent_revenue: 'a',
+  parent_orders_table: 'a',
+});
+assert.equal(dataRules.parent_orders_table, 'b');
+assert.equal(dataRules.parent_revenue, 'b');
+assert.ok(
+  Number(dataRules.order_revenue) < Number(dataRules.order_orders_table),
+);
+const formRules = constrainPlacement(
+  chosenSet(['input_name', 'input_email', 'security', 'save']),
+  'two-column',
+  { parent_input_name: 'b', parent_save: 'a' },
+);
+assert.equal(formRules.parent_save, 'b');
+assert.ok(Number(formRules.order_input_email) < Number(formRules.order_save));
+assert.equal(formRules.group_b, 'stack');
+const inboxSet = chosenSet([
+  'conversation_list',
+  'conversation',
+  'customer_details',
+]);
+assert.equal(sensibleLayout(inboxSet, 'main-left', 'desktop'), 'main-right');
+const inboxRules = constrainPlacement(inboxSet, 'three-column', {});
+assert.equal(inboxRules.parent_conversation_list, 'a');
+assert.equal(inboxRules.parent_conversation, 'b');
+assert.equal(inboxRules.parent_customer_details, 'c');
+console.log(
+  'Semantic cohort order, form/action locality, summary-before-detail and wide data/conversation constraints pass.',
+);
+
+// Property configuration and supplied content use the same renderer contracts.
+const { readContent, suppliedCandidates, bindContent } =
+  await import('../lib/jev-first/content');
+const { configurationFor } = await import('../lib/jev-first/configure');
+const { listingMatches } = await import('../lib/tree/listing');
+const brief = readContent(
+  'Name: Rahul\nINR balance: 42,500\nUSD balance: 1800\nRole: Designer',
+);
+const bound = bindContent(buildCandidates('Profile'), brief);
+assert.equal(
+  bound.find((c) => c.id === 'identity')?.nodes.find((n) => n.kind === 'avatar')
+    ?.props.name,
+  'Rahul',
+);
+assert.equal(
+  bound
+    .find((c) => c.id === 'wallet_in')
+    ?.nodes.find((n) => n.kind === 'financial-value')?.props.amount,
+  42500,
+);
+assert.throws(() => readContent('INR balance: not a number'), /finite/);
+assert.throws(() => readContent('```json\n{broken}\n```'), /valid JSON/);
+assert.throws(
+  () =>
+    suppliedCandidates({
+      fields: [
+        { label: 'Priority', type: 'select', options: ['Low'], value: 'High' },
+      ],
+    }),
+  /match an option/,
+);
+const exactData = {
+  title: 'Project intake',
+  fields: [
+    { label: 'Project name', value: 'Mint' },
+    {
+      label: 'Priority',
+      type: 'select',
+      options: ['Low', 'High'],
+      value: 'High',
+    },
+  ],
+  metrics: [{ label: 'Open projects', value: '12' }],
+  chart: {
+    title: 'Projects by week',
+    series: [
+      { label: 'Mon', value: 3 },
+      { label: 'Tue', value: 5 },
+    ],
+  },
+  table: {
+    title: 'Projects',
+    columns: ['Name', 'Owner'],
+    rows: [['Mint', 'Rahul']],
+  },
+};
+let customResult;
+for await (const event of composeJevFirst({
+  prompt:
+    'Create a project workspace\n```json\n' +
+    JSON.stringify(exactData) +
+    '\n```',
+  device: 'desktop',
+  signal: new AbortController().signal,
+  evaluate: evaluator(['save']),
+}))
+  if (event.type === 'complete') customResult = event;
+assert.ok(customResult);
+assert.equal(customResult.document.title, 'Project intake');
+assert.equal(
+  customResult.document.nodes.find((n) => n.id === 'jf_custom_field_1')?.props
+    .value,
+  'High',
+);
+assert.ok(customResult.document.nodes.some((n) => n.id === 'jf_custom_table'));
+assert.equal(customResult.metrics.jevCalls, 2);
+assert.equal(customResult.metrics.textMs, 0);
+validateDocument(customResult.document);
+assert.ok(
+  renderToStaticMarkup(
+    <TreeRenderer document={customResult.document} />,
+  ).includes('Project name'),
+);
+const config = configurationFor(
+  bound.filter((c) => c.id === 'wallet_in'),
+  false,
+);
+const configAnswers = Object.fromEntries(
+  Object.keys(config.questions).map((k) => [
+    k,
+    k.endsWith('_surface') ? 'card' : 'keep',
+  ]),
+);
+assert.equal(config.apply(configAnswers)[0].nodes[0].props.surface, 'card');
+assert.throws(() => config.apply({}), /Invalid configuration/);
+assert.equal(Object.keys(configurationFor(bound, true).questions).length, 0);
+const stayIds = [
+  'stay_search',
+  'stay_categories',
+  'stay_coast',
+  'stay_cabin',
+  'stay_city',
+  'stay_lake',
+  'stay_desert',
+  'stay_garden',
+];
+for (const device of ['desktop', 'tablet', 'mobile'] as const) {
+  let end;
+  for await (const e of composeJevFirst({
+    prompt: 'airbnb homepage feed',
+    device,
+    signal: new AbortController().signal,
+    evaluate: evaluator(stayIds),
+  }))
+    if (e.type === 'complete') end = e;
+  assert.ok(end);
+  validateDocument(end.document);
+  assert.equal(
+    end.document.nodes.filter((n) => n.kind === 'listing-card').length,
+    6,
+  );
+  assert.ok(
+    renderToStaticMarkup(<TreeRenderer document={end.document} />).includes(
+      'Sea breeze villa',
+    ),
+  );
+  const coast: import('../lib/tree/spec').UINode = end.document.nodes.find(
+    (n) => n.id === 'jf_stay_coast',
+  )!;
+  assert.ok(
+    listingMatches(coast, {
+      jf_destination: 'Alibaug',
+      jf_stay_category: 'Beachfront',
+    }),
+  );
+  assert.equal(listingMatches(coast, { jf_stay_category: 'Cabins' }), false);
+}
+console.log(
+  'Supplied fields, balances, datasets, property configuration, malformed data, stay feed rendering and local filters pass.',
+);
+const { bindingSignature, compatibleEdits } =
+  await import('../lib/tree/edit-state');
+const formDoc = customResult.document;
+const local = {
+  jf_custom_field_0: {
+    value: 'Edited locally',
+    signature: bindingSignature(formDoc, 'jf_custom_field_0'),
+  },
+};
+assert.equal(
+  compatibleEdits(formDoc, local).jf_custom_field_0,
+  'Edited locally',
+);
+const updatedDoc = structuredClone(formDoc);
+updatedDoc.nodes.find((n) => n.id === 'jf_custom_field_0')!.props.value =
+  'A newly supplied name';
+assert.equal(compatibleEdits(updatedDoc, local).jf_custom_field_0, undefined);
+assert.equal(
+  readContent('Make a profile for "Asha Rao" with heading "My account"').name,
+  'Asha Rao',
+);
+assert.throws(
+  () =>
+    suppliedCandidates({
+      table: { title: 'Bad', columns: ['Name'], rows: [[{ bad: true }]] },
+    }),
+  /text or numbers/,
+);
+let inheritedContext: unknown = 'unset';
+for await (const _ of composeJevFirst({
+  prompt: 'airbnb homepage feed',
+  previous: customResult.document,
+  device: 'desktop',
+  signal: new AbortController().signal,
+  evaluate: async (q, s, a) => {
+    if ('layout' in q) {
+      inheritedContext = s.previous;
+      assert.equal(q.supported, undefined);
+    }
+    return evaluator(stayIds)(q, s, a);
+  },
+})) {
+}
+assert.equal(inheritedContext, undefined);
+let invalidDataCalls = 0;
+await assert.rejects(async () => {
+  for await (const _ of composeJevFirst({
+    prompt:
+      'Create a form\n```json\n{"fields":[{"label":"Priority","type":"select","options":["Low"],"value":"High"}]}\n```',
+    device: 'desktop',
+    signal: new AbortController().signal,
+    evaluate: async () => {
+      invalidDataCalls++;
+      return { answers: {} };
+    },
+  })) {
+  }
+}, /match an option/);
+assert.equal(invalidDataCalls, 0);
+const listingBefore = await resultFor(stayIds);
+const listingVariation = await resultFor(stayIds, listingBefore.document, true);
+assert.equal(
+  listingBefore.document.nodes.find((n) => n.id === 'jf_group_b')?.props
+    .columns,
+  3,
+);
+assert.equal(
+  listingVariation.document.nodes.find((n) => n.id === 'jf_group_b')?.props
+    .columns,
+  2,
+);
+assert.deepEqual(
+  listingVariation.document.nodes
+    .filter((n) => n.kind === 'listing-card')
+    .map((n) => n.props),
+  listingBefore.document.nodes
+    .filter((n) => n.kind === 'listing-card')
+    .map((n) => n.props),
 );

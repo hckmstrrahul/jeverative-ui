@@ -70,11 +70,11 @@ The correction loop has a hard limit of one additional text-model attempt. It do
 
 ### Engine choices
 
-The new default on this branch is **Jev-first**: finite element selection → immediate preview → batched placement. See [implementation, coverage and testing](docs/JEV-FIRST.md). The HTML architecture page currently describes the older engines.
+The new default on this branch is **Jev-first**: finite element selection → batched placement → one completed preview. See [implementation, coverage and testing](docs/JEV-FIRST.md) and [configurable content examples](docs/CONFIGURABLE-COMPONENTS.md). The HTML architecture page currently describes the older engines.
 
 | Engine | Generation path | Typical paid calls | Trade-off |
 | --- | --- | --- | --- |
-| **Jev-first** | Jev selects prepared elements → preview → Jev groups/orders them | 1–2 Jev calls, no text model | Fast bounded content; prototype actions and sample data |
+| **Jev-first** | Jev selects prepared elements → Jev groups/orders them → validated preview | 1–2 Jev calls, no text model | Bounded configurable content, supplied datasets, and prototype actions |
 | **Adaptive hybrid** | Jev plan → local scaffold → streamed text-model content | 1 Jev + 1 text call; a second text call if repair is needed | Enforced macro-layout, with extra planning overhead |
 | **LLM only** | Text model chooses the entire document | 1 text call; a second if repair is needed | Simpler pipeline; less structural guidance |
 | **Prepared Jev engine** | Two-stage decision process over prepared recipes, modules and blueprints | Usually 2 Jev calls | Low-cost bounded compositions; less open-ended content |

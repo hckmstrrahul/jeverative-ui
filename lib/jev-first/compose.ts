@@ -1,3 +1,11 @@
+import {
+  readContent,
+  suppliedCandidates,
+  bindContent,
+  previousCustom,
+} from './content';
+import { configurationFor } from './configure';
+import { sensibleLayout, constrainPlacement } from './rules';
 import { type Question, ENDPOINT, MODEL } from '../decisions';
 import { validateDocument, type UIDocument, type UINode } from '../tree/spec';
 import { buildCandidates, type Candidate } from './candidates';
@@ -51,6 +59,8 @@ const choice = (
 ): Question => ({ type: 'choice', instructions, criteria });
 const titles: Record<string, string> = {
   profile: 'Profile',
+  stays: 'Find your next stay',
+  custom: 'Your workspace',
   settings: 'Account settings',
   sales: 'Sales overview',
   portfolio: 'Investment portfolio',
@@ -157,7 +167,10 @@ function assemble(
         props:
           mode === 'stack' || narrow
             ? { direction: 'column', gap: 16 }
-            : { columns: mode === 'grid3' ? 3 : 2, gap: 16 },
+            : {
+                columns: mode === 'grid3' && device !== 'tablet' ? 3 : 2,
+                gap: 16,
+              },
       });
       // Consecutive summary metrics share a compact row, even when their
       // group also contains a full-width chart/table. Never nest a grid in
@@ -227,7 +240,52 @@ export async function* composeJevFirst(
     }
     return answersFor(result.answers, questions);
   }
-  const candidates = buildCandidates(prompt, previous);
+  const data = readContent(prompt);
+  const editing =
+    Boolean(previous) &&
+    (variation ||
+      /^(?:please\s+)?(?:change|update|edit|replace|remove|add|switch|use|keep|make (?:it|this)|same (?:ui|screen))\b/i.test(
+        prompt.trim(),
+      ) ||
+      /^(?:name|email|role|bio|title|heading|inr balance|usd balance|primary label|destination)\s*:/i.test(
+        prompt.trim(),
+      ));
+  const supplied = suppliedCandidates(data);
+  const prior = editing ? previous : undefined;
+  const custom = [
+    ...previousCustom(prior).filter(
+      (c) => !supplied.some((n) => n.id === c.id),
+    ),
+    ...supplied,
+  ];
+  const baseCandidates = buildCandidates(prompt, prior).filter(
+    (c) =>
+      !(data.fields && c.id.startsWith('input_')) &&
+      !(
+        data.metrics &&
+        ['revenue', 'orders', 'customers', 'portfolio_value'].includes(c.id)
+      ) &&
+      !(data.chart && ['revenue_line', 'revenue_bar'].includes(c.id)) &&
+      !(data.table && ['orders_table', 'holdings'].includes(c.id)),
+  );
+  for (const c of custom)
+    validateDocument({
+      version: 1,
+      title: 'Supplied content',
+      device,
+      theme: 'light',
+      nodes: [
+        root(device, 'stacked'),
+        {
+          id: 'jf_validation_heading',
+          parent: 'jf_page',
+          kind: 'heading',
+          props: { text: 'Content', level: 1 },
+        },
+        ...c.nodes,
+      ],
+    });
+  const candidates = bindContent([...baseCandidates, ...custom], data);
   const layouts: Record<string, string> =
     device === 'mobile'
       ? {
@@ -246,7 +304,7 @@ export async function* composeJevFirst(
   if (
     variation &&
     previousLayout &&
-    !/\b(single|one|two|three|2|3)[ -]column\b/i.test(prompt)
+    !/\b(single|one|two|three|2|3)[ -](?:column|pane)s?\b/i.test(prompt)
   ) {
     const old =
       previousLayout.columns === 1
@@ -264,9 +322,9 @@ export async function* composeJevFirst(
   }
   const select: Record<string, Question> = {
     supported: choice(
-      'Can the supplied capabilities reasonably represent the core requested interface? Choose unavailable for unrelated tasks or missing essential data/actions. Never pretend to support a real backend. Prototype-only actions are allowed when a prototype is requested.',
+      'Can the supplied capabilities reasonably represent the core requested interface? Choose unavailable for unrelated tasks or missing essential data/actions. Never pretend to support a real backend. This tool always builds UI prototypes: visual search, booking and payment controls do not require a backend to count as supported. Familiar product names mean a similar interface, not full product integration. Supplied fields and datasets extend the vocabulary to other domains.',
       {
-        yes: 'Core interface is covered by these sample-data capabilities',
+        yes: 'The interface can be represented using prepared components and supplied data',
         unavailable: 'Core requested interface is not covered',
       },
     ),
@@ -283,6 +341,9 @@ export async function* composeJevFirst(
       { light: 'Light Mint theme', dark: 'Dark Mint theme' },
     ),
   };
+  const knownDiscovery =
+    /\b(airbnb|accommodation|vacation rentals?|stay discovery)\b/i.test(prompt);
+  if (knownDiscovery) delete select.supported;
   const resources = new Map<string, Candidate[]>();
   for (const c of candidates) {
     const key = c.resource ?? c.id;
@@ -295,7 +356,7 @@ export async function* composeJevFirst(
         )
       : [];
   for (const [key, items] of resources)
-    if (!preserved.length)
+    if (!preserved.length && !items.some((c) => c.required))
       select[`use_${key}`] = choice(
         'Include only requested content and essential companions. For edits preserve existing content unless asked to remove it. For a read-only page do not add editable fields. Choose at most one variant of this resource.',
         {
@@ -308,12 +369,12 @@ export async function* composeJevFirst(
     prompt,
     device,
     mode: variation ? 'spatial variation, preserve content' : 'create or edit',
-    previous: previous
+    previous: prior
       ? {
-          title: previous.title,
-          theme: previous.theme,
+          title: prior.title,
+          theme: prior.theme,
           elements: candidates
-            .filter((c) => previous.nodes.some((n) => n.id === `jf_${c.id}`))
+            .filter((c) => prior.nodes.some((n) => n.id === `jf_${c.id}`))
             .map((c) => ({ id: c.id, description: c.description })),
         }
       : undefined,
@@ -322,15 +383,17 @@ export async function* composeJevFirst(
       description: c.description,
     })),
     limits:
-      'At most 24 content candidates. Sample data only. No arbitrary prose, backend actions, drag-and-drop or working table search. All choices are independent; coordinate them using the whole request.',
+      'At most 24 content candidates. Use supplied data where provided; otherwise prepared sample data. No arbitrary prose, backend actions, drag-and-drop or working table search. All choices are independent; coordinate them using the whole request.',
   });
-  if (chosen.supported !== 'yes')
+  if (!knownDiscovery && chosen.supported !== 'yes')
     throw new Error(
       'This request needs content or capabilities outside Jev-first’s prepared library. Try Hybrid for open-ended generation.',
     );
-  const selected = preserved.length
+  let selected = preserved.length
     ? preserved
-    : candidates.filter((c) => chosen[`use_${c.resource ?? c.id}`] === c.id);
+    : candidates.filter(
+        (c) => c.required || chosen[`use_${c.resource ?? c.id}`] === c.id,
+      );
   if (!selected.length)
     throw new Error(
       'Jev selected no content. Refine the request or try Hybrid.',
@@ -339,27 +402,25 @@ export async function* composeJevFirst(
     throw new Error(
       'Jev selected too much content. Request a focused screen with fewer sections.',
     );
+  chosen.layout = sensibleLayout(selected, chosen.layout, device);
   const theme = chosen.theme as UIDocument['theme'];
   const quotedTitle = prompt.match(
     /(?:title|heading)(?:\s+(?:to|is|as))?\s*["“]([^"”\n]{1,100})["”]/i,
   )?.[1];
   const title =
-    quotedTitle ??
-    (previous && (variation || !/\b(create|design|build|new)\b/i.test(prompt))
-      ? previous.title
-      : titles[chosen.title]);
+    (typeof data.title === 'string' ? data.title : quotedTitle) ??
+    (prior ? prior.title : titles[chosen.title]);
   let document = assemble(selected, title, device, theme, chosen.layout);
-  const firstContentMs = Math.round(performance.now() - started);
   const plan = {
     arrangement: chosen.layout,
     density: 'compact',
     surface: 'plain',
   };
   yield { type: 'plan', plan };
-  yield { type: 'preview', document };
-  if (selected.length > 1) {
+  const configuration = configurationFor(selected, Boolean(variation));
+  if (selected.length > 1 || Object.keys(configuration.questions).length) {
     yield { type: 'status', message: 'Jev is arranging selected elements' };
-    const placement: Record<string, Question> = {};
+    const placement: Record<string, Question> = { ...configuration.questions };
     for (const g of ['a', 'b', 'c'])
       placement[`group_${g}`] = choice(
         `Choose layout within group ${g}. Grid is useful for peer metrics/cards, stack for forms and text. Wide tables and mobile screens are stacked by local rules.`,
@@ -369,6 +430,20 @@ export async function* composeJevFirst(
           grid3: 'Three peer columns',
         },
       );
+    if (
+      variation &&
+      device === 'desktop' &&
+      selected.some((c) => c.nodes[0].kind === 'listing-card')
+    ) {
+      const oldColumns = previous?.nodes.find((n) => n.id === 'jf_group_b')
+        ?.props.columns;
+      placement.group_b = choice(
+        'Choose a different valid listing density for this variation.',
+        oldColumns === 3
+          ? { grid2: 'Two spacious listing columns' }
+          : { grid3: 'Three compact listing columns' },
+      );
+    }
     const maxGroups = ['reading'].includes(chosen.layout)
       ? ['a']
       : chosen.layout === 'three-column'
@@ -413,6 +488,7 @@ export async function* composeJevFirst(
         .filter((n) => selected.some((c) => n.id === `jf_${c.id}`))
         .map((n) => n.id),
     });
+    selected = configuration.apply(arranged);
     for (const c of selected)
       if (c.nodes[0].kind === 'metric')
         arranged[`parent_${c.id}`] = arranged.parent_summary_metrics;
@@ -429,9 +505,8 @@ export async function* composeJevFirst(
       device,
       theme,
       chosen.layout,
-      arranged,
+      constrainPlacement(selected, chosen.layout, arranged),
     );
-    yield { type: 'preview', document };
   }
   const totalMs = Math.round(performance.now() - started);
   yield {
@@ -443,7 +518,7 @@ export async function* composeJevFirst(
     latency: totalMs,
     metrics: {
       totalMs,
-      firstContentMs,
+      firstContentMs: totalMs,
       planMs: totalMs,
       textMs: 0,
       repairs: 0,

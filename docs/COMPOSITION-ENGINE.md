@@ -12,7 +12,6 @@ Connection settings label this **Jev-directed · adaptive UI**. Composition deta
 
 Validated with mock-provider route tests for all devices, strict plan decisions, plan-before-content ordering, immutable scaffold edges, slot completeness, planning failure without fallback, and select contracts. Existing renderer/stream/cancellation tests pass. Live generation requires the user's session key; no live model evaluation has been performed for this revision.
 
-Research basis: [Jev's documented discrete-choice role](https://json-render.dev/docs/jev). Our implementation imports no json-render packages.
 
 ---
 
@@ -24,13 +23,11 @@ Research basis: [Jev's documented discrete-choice role](https://json-render.dev/
 
 The previous representation stored a unique list of component types plus a recipe. It could select `field` once, but that entry rendered an entire prepared settings form. It could not represent four different input instances in two independently configured panels. Recipe reconciliation also reinserted blocks and imposed ordering after model decisions. More blueprints expanded the menu without addressing that representation.
 
-json-render's useful architectural separation is a typed component vocabulary, a UI document describing instances and relationships, and a renderer mapping that document to owned components. Its [spec examples](https://json-render.dev/docs/specs) demonstrate independent instances with props and children. Its [catalog documentation](https://json-render.dev/docs/catalog) makes available properties and actions part of the contract. We adopted those principles in our own format and implementation; no json-render packages or runtime code were installed.
+Jeverative separates a typed component vocabulary, a UI document of instances and relationships, and a renderer backed by owned components. Catalog contracts define permitted properties and actions.
 
-The [Jev integration documentation](https://json-render.dev/docs/jev) distinguishes discrete candidate selection from text generation. Candidate values must be supplied; Jev cannot invent absent prose or data. It can choose relationships and order, but valid output alone does not establish semantic completeness or visual quality. That supports using a text model for open-ended UI content and structure, with Jev handling bounded layout decisions.
+Jev selects supplied candidates, relationships and order. Open-ended prose and data require the text-model engines. Valid structure alone does not establish completeness or visual quality.
 
-The [playground server example](https://github.com/vercel-labs/json-render/blob/main/apps/web/app/api/generate/route.ts) separates its regular text-model path from its Jev path. The [dashboard example](https://github.com/vercel-labs/json-render/tree/main/examples/dashboard) combines streamed UI documents, named actions, saved widgets and follow-up edits. Jeverative implements local preview actions; it does not add their database or external business actions.
-
-The [streaming guide](https://json-render.dev/docs/streaming) describes incremental document updates. The [binding guide](https://json-render.dev/docs/data-binding) separates the interface description from interactive state. Our transport uses parent-first node events and validated document snapshots; our binding keys are simple local identifiers, not their expression language.
+The transport uses incremental node events and validated document snapshots. Interaction state uses local binding identifiers; preview actions do not connect to an external business backend.
 
 ## Our implementation
 

@@ -708,3 +708,15 @@
 .mint-theme.light input {
   color-scheme: light;
 }
+
+.tree-listing-card{min-width:0;display:flex;flex-direction:column;gap:4px}
+.tree-listing-media{position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:12px;margin-bottom:10px;background:var(--backgroundSecondary)}
+.tree-listing-media img{display:block;width:100%;height:100%;object-fit:cover}
+.tree-listing-media>[data-slot=badge]{position:absolute;top:12px;left:12px;background:#fff;color:#343b38}
+.tree-listing-save{position:absolute;right:12px;top:12px;border-radius:50%;background:#fff;color:#343b38}
+.tree-listing-title{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tree-listing-title h3{font:500 14px/20px GrowwSans,sans-serif;margin:0}
+.tree-listing-title span{font:400 12px/18px GrowwSans,sans-serif;white-space:nowrap}
+.tree-listing-card p{font:400 14px/20px GrowwSans,sans-serif;color:var(--contentSecondary);margin:0}
+.tree-listing-price{font:500 14px/20px GrowwSans,sans-serif;margin-top:4px}
+.tree-listing-price span{font-weight:400;color:var(--contentSecondary)}

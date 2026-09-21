@@ -2,6 +2,7 @@ import { validateDocument, type UIDocument, type UINode } from '../tree/spec';
 
 export type Candidate = {
   id: string;
+  required?: boolean;
   description: string;
   resource?: string;
   wide?: boolean;
@@ -578,6 +579,82 @@ export function buildCandidates(
       message: 'Prototype only. No payment was made.',
     },
   );
+  add(
+    'stay_search',
+    'Accommodation discovery search controls: destination, dates and guests. Use for Airbnb-style home feeds and travel rental browsing. Local input state; no server search.',
+    'grid',
+    { columns: 3, gap: 12 },
+    [
+      [
+        'destination',
+        'input',
+        {
+          label: 'Where',
+          bind: 'jf_destination',
+          placeholder: 'Search destinations',
+        },
+      ],
+      [
+        'dates',
+        'input',
+        { label: 'When', bind: 'jf_stay_dates', placeholder: 'Add dates' },
+      ],
+      [
+        'guests',
+        'select',
+        {
+          label: 'Guests',
+          bind: 'jf_guests',
+          options: ['1 guest', '2 guests', '4 guests', '6 guests'],
+          value: '2 guests',
+        },
+      ],
+    ],
+  );
+  add(
+    'stay_categories',
+    'Category filters for accommodation browsing: all stays, cabins, beach, city and countryside. Local category selection.',
+    'mint-pill-group',
+    {
+      label: 'Explore stays',
+      bind: 'jf_stay_category',
+      options: ['All stays', 'Cabins', 'Beachfront', 'City', 'Countryside'],
+      value: 'All stays',
+    },
+  );
+  for (const [id, title, location, price, scene] of [
+    ['coast', 'Sea breeze villa', 'Alibaug, Maharashtra', '₹8,500', 'coast'],
+    ['cabin', 'Forest hideaway', 'Manali, Himachal Pradesh', '₹5,200', 'cabin'],
+    ['city', 'The city loft', 'Bengaluru, Karnataka', '₹4,800', 'city'],
+    ['lake', 'Lakeside retreat', 'Udaipur, Rajasthan', '₹7,400', 'lake'],
+    ['desert', 'Desert courtyard', 'Jaisalmer, Rajasthan', '₹6,200', 'desert'],
+    ['garden', 'Garden cottage', 'Coorg, Karnataka', '₹5,800', 'garden'],
+  ] as const)
+    add(
+      `stay_${id}`,
+      `Accommodation listing for a rental discovery feed: ${title} in ${location}. Illustrated sample listing, price per night, rating and save action. Select several for a home feed.`,
+      'listing-card',
+      {
+        title,
+        location,
+        price,
+        scene,
+        bind: `jf_saved_${id}`,
+        searchBind: 'jf_destination',
+        categoryBind: 'jf_stay_category',
+        category:
+          scene === 'coast'
+            ? 'Beachfront'
+            : scene === 'cabin'
+              ? 'Cabins'
+              : scene === 'city'
+                ? 'City'
+                : 'Countryside',
+        rating: '4.9',
+        dates: 'Available this month',
+        tag: 'Guest favourite',
+      },
+    );
   const quoted = [...prompt.matchAll(/["“]([^"”\n]{1,100})["”]/g)]
     .map((m) => m[1])
     .slice(0, 4);

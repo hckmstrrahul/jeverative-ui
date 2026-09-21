@@ -74,6 +74,21 @@ type Result = {
 };
 const examplePrompts = [
   {
+    label: 'Stay discovery',
+    prompt:
+      'Design an Airbnb-style homepage feed with destination, date and guest controls, categories and six illustrated stay listings with prices, ratings and save actions.',
+  },
+  {
+    label: 'Custom profile',
+    prompt:
+      'Create a compact profile with identity, bio, INR and USD wallets.\nName: Rahul\nRole: Product designer\nBio: Designing thoughtful interfaces.\nINR balance: 42500\nUSD balance: 1800',
+  },
+  {
+    label: 'Custom workspace',
+    prompt:
+      'Create a desktop project intake form using these supplied fields. Include a save action.\n```json\n{"title":"Project intake","primaryLabel":"Save project","fields":[{"label":"Project name","value":"Mint refresh"},{"label":"Priority","type":"select","options":["Low","Medium","High"],"value":"High"},{"label":"Brief","type":"textarea"}]}\n```',
+  },
+  {
     label: 'Profile & wallets',
     prompt:
       'Design a compact mobile investing profile. Show avatar, name, separate INR and USD wallet balances, add-money actions, linked bank accounts, verification status and settings. Use Mint light theme.',
@@ -471,7 +486,7 @@ export default function Home() {
               <div>
                 <h1>Generate interfaces instantly</h1>
                 <p>
-                  LLM models x Jev demo by{' '}
+                  Jev demo by{' '}
                   <a
                     href="https://x.com/hckmstrrahul"
                     target="_blank"
@@ -560,6 +575,18 @@ export default function Home() {
                 </div>
               </div>
             </form>
+            {engine === 'jev-first' && (
+              <details className="composer-data-help">
+                <summary>Use your own content</summary>
+                <p>
+                  Add lines such as <code>Name: Rahul</code>,{' '}
+                  <code>INR balance: 42500</code> or{' '}
+                  <code>Destination: Goa</code>. For custom fields, metrics,
+                  tables or charts, use a JSON data block—try Custom workspace.
+                  Supplied data is sent to OpenRouter with your prompt.
+                </p>
+              </details>
+            )}
             <div className="prompt-suggestions">
               {examplePrompts.map(({ label, prompt: example }) => (
                 <Button

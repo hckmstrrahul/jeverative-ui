@@ -1,4 +1,10 @@
 'use client';
+import {
+  bindingSignature,
+  compatibleEdits,
+  type LocalEdits,
+} from '@/lib/tree/edit-state';
+import { listingMatches } from '@/lib/tree/listing';
 import { MintThemeContext } from './mint-theme';
 import { MintSurface } from './tree-surface';
 import { Spinner } from './ui/spinner';
@@ -113,11 +119,17 @@ export function TreeRenderer({
   document: UIDocument;
   busy?: boolean;
 }) {
-  const [edits, setEdits] = useState<Record<string, Value>>({});
-  const state = { ...defaultsFor(document), ...edits };
+  const [edits, setEdits] = useState<LocalEdits>({});
+  const state = {
+    ...defaultsFor(document),
+    ...compatibleEdits(document, edits),
+  };
   const [feedback, setFeedback] = useState('');
   const set = (key: string, value: Value) =>
-    setEdits((old) => ({ ...old, [key]: value }));
+    setEdits((old) => ({
+      ...old,
+      [key]: { value, signature: bindingSignature(document, key) },
+    }));
   const notify = (message: string) => {
     setFeedback(message);
     toast.add({ title: message, type: 'success' });
@@ -132,6 +144,7 @@ export function TreeRenderer({
       .filter(
         (n) =>
           n.parent === node.id &&
+          listingMatches(n, state) &&
           !(node.kind === 'field' && n.kind === 'label'),
       )
       .map((n) => (
@@ -144,6 +157,15 @@ export function TreeRenderer({
           {render(n)}
         </div>
       ));
+    if (
+      !children.length &&
+      document.nodes.some(
+        (n) => n.parent === node.id && n.kind === 'listing-card',
+      )
+    )
+      children.push(
+        <output key="empty-listings">No stays match these filters.</output>,
+      );
     const bind = text('bind', node.id),
       value = state[bind] ?? '';
     const label = text('label');

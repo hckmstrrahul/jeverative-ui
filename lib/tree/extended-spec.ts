@@ -19,6 +19,23 @@ const input = {
   required: 'boolean',
 } as const;
 export const extendedDefinitions = {
+  'listing-card': definition(
+    'Prepared accommodation/product discovery card with decorative local artwork and local save toggle. Sample listing; no booking backend.',
+    {
+      title: 'text',
+      location: 'text',
+      price: 'text',
+      dates: 'text',
+      rating: 'text',
+      bind: 'text',
+      searchBind: 'text',
+      categoryBind: 'text',
+      category: 'text',
+      scene: ['coast', 'cabin', 'city', 'lake', 'desert', 'garden'],
+      tag: 'text',
+    },
+    ['title', 'location', 'price', 'scene'],
+  ),
   'financial-value': definition(
     'Structured financial value. Indian grouping, two decimals. Return tone derives from sign; zero is secondary, unavailable is a dash. Only one anchor per panel; use list role in rows.',
     {
@@ -361,6 +378,7 @@ export const extendedContainers: ExtendedKind[] = [
   'message-scroller',
 ];
 export const extendedBindings: ExtendedKind[] = [
+  'listing-card',
   'mint-bottom-nav',
   'mint-pill',
   'mint-pill-group',

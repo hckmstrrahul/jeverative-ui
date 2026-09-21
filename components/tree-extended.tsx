@@ -1,4 +1,5 @@
 'use client';
+import { ListingCard } from './listing-card';
 import { Fragment, useState, type ReactNode } from 'react';
 import type { UINode, Value } from '@/lib/tree/spec';
 import { Button } from './ui/button';
@@ -972,6 +973,20 @@ export function TreeExtended({
             {text('submit', 'Continue')}
           </QuestionnaireSubmit>
         </Questionnaire>
+      );
+    case 'listing-card':
+      return (
+        <ListingCard
+          saved={Boolean(value)}
+          onSavedChange={change}
+          title={text('title')}
+          location={text('location')}
+          price={text('price')}
+          dates={text('dates')}
+          rating={text('rating', '4.9')}
+          scene={text('scene', 'coast')}
+          tag={text('tag')}
+        />
       );
     default:
       throw new Error(`No extended renderer for ${node.kind}`);

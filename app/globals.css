@@ -141,7 +141,7 @@ body {
 .studio-brand{display:flex;align-items:center;gap:9px;font-size:18px;letter-spacing:-.7px}
 .studio{padding:30px 36px 32px;max-width:1600px;flex:none}
 .studio-heading{gap:24px;margin-bottom:24px}
-.studio h1{font-size:30px;letter-spacing:-1.1px}
+.studio h1{font-family:Sohne,sans-serif;font-weight:500;font-size:30px;letter-spacing:-1.1px}
 .studio-heading p{margin-top:8px}
 .composer{flex-shrink:0}
 .composer textarea{min-height:62px}
@@ -169,3 +169,5 @@ body {
 .studio-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;min-height:100%;padding:40px 20px;text-align:center}
 .studio-empty-mark{display:grid;place-items:center;width:56px;height:56px;border:1px solid var(--border);border-radius:16px;background:var(--background);color:#888891;margin-bottom:8px}
 .studio-empty h2{font-size:20px;font-weight:550;letter-spacing:-.5px}.studio-empty p{font-size:13px;line-height:1.6;color:#85858e;max-width:340px}.studio-empty button{margin-top:8px}
+
+.composer-data-help{margin-top:10px;color:var(--contentSecondary);font-size:12px;line-height:18px}.composer-data-help summary{cursor:pointer}.composer-data-help p{max-width:720px;margin-top:8px}.composer-data-help code{font-family:inherit;font-weight:500}
