@@ -582,7 +582,8 @@ export function normalizeNodeContext(doc: UIDocument, raw: unknown): unknown {
   if (
     isRecord(raw) &&
     isRecord(raw.props) &&
-    raw.props.label === undefined &&
+    (raw.props.label === undefined ||
+      (typeof raw.props.label === 'string' && !raw.props.label.trim())) &&
     ['button-group', 'financial-value', 'mint-pill-group'].includes(
       String(raw.kind),
     )
@@ -601,17 +602,20 @@ export function normalizeNodeContext(doc: UIDocument, raw: unknown): unknown {
             .replace(/\b(group|select)\b/gi, '')
             .trim()
         : '';
-    const label =
-      (parent?.kind === 'field' ? parent.props.label : undefined) ??
-      (raw.kind === 'financial-value' && parent?.kind === 'mint-row'
+    const { id: rawId, kind: rawKind } = raw;
+    const label = [
+      doc.nodes.find((node) => node.id === rawId && node.kind === rawKind)?.props.label,
+      parent?.kind === 'field' ? parent.props.label : undefined,
+      raw.kind === 'financial-value' && parent?.kind === 'mint-row'
         ? parent.props.title
-        : undefined) ??
-      (raw.kind === 'financial-value' &&
-      parent?.kind === 'stack' &&
-      parent.props.direction === 'row'
-        ? sibling?.props.text
-        : undefined) ??
-      idLabel;
+        : undefined,
+      raw.kind === 'financial-value' && parent?.kind === 'stack' &&
+      parent.props.direction === 'row' ? sibling?.props.text : undefined,
+      idLabel,
+      raw.kind === 'financial-value' ? 'Amount' : 'Options',
+    ].find((candidate): candidate is string =>
+      typeof candidate === 'string' && Boolean(candidate.trim()),
+    )?.trim();
     if (typeof label === 'string' && label)
       raw = {
         ...raw,

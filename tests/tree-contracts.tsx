@@ -2187,3 +2187,30 @@ assert.throws(()=>new DocumentStream([],fallbackMeta).finish({completeTransport:
 const truncatedProviderEnd=new DocumentStream();
 truncatedProviderEnd.push('{"node":');
 assert.throws(()=>truncatedProviderEnd.finish({completeTransport:true}));
+
+// Missing and blank financial labels use meaningful existing context locally.
+for (const label of [undefined, '', '   ', '\t\n', 'Available balance']) {
+  const parser = new DocumentStream([], metadata);
+  parser.push(JSON.stringify({node:node('page',null,'page')}));
+  parser.push(JSON.stringify({node:node('wallet','page','mint-row',{title:'INR wallet'})}));
+  parser.push(JSON.stringify({node:node('fin-val-inr','wallet','financial-value',{
+    ...(label === undefined ? {} : {label}), amount:42500.75,currency:'INR',role:'list',
+  })}));
+  parser.push('{"done":true}');
+  const original = parser.finish();
+  const value = original.nodes.find(n=>n.id==='fin-val-inr')!;
+  assert.equal(value.props.label,label?.trim() ? label : 'INR wallet');
+  assert.equal(value.props.amount,42500.75);
+  assert.equal(value.props.currency,'INR');
+  const repair = new DocumentStream([],undefined,original);
+  repair.push(JSON.stringify({node:{...value,props:{...value.props,label:'  '}}}));
+  repair.push('{"done":true}');
+  assert.equal(repair.finish().nodes.find(n=>n.id===value.id)?.props.label,value.props.label);
+  assert.deepEqual(repair.finish().nodes.filter(n=>n.id!==value.id),original.nodes.filter(n=>n.id!==value.id));
+}
+const blankContext = new DocumentStream([],metadata);
+for (const n of [node('page',null,'page'),node('row','page','stack',{direction:'row'}),
+  node('returnValue','row','financial-value',{label:' ',amount:12,format:'return'})])
+  blankContext.push(JSON.stringify({node:n}));
+blankContext.push('{"done":true}');
+assert.equal(blankContext.finish().nodes.find(n=>n.id==='returnValue')?.props.label,'Return Value');
