@@ -1,3 +1,4 @@
+import { workflowKinds, flowStates } from '../fintech/workflows';
 import type { Field } from './spec';
 const definition = (
   description: string,
@@ -19,6 +20,28 @@ const input = {
   required: 'boolean',
 } as const;
 export const extendedDefinitions = {
+  'finance-chart': definition(
+    'Interactive sample financial series with time range controls. Range selects a subset of supplied historical samples; never live market data.',
+    {
+      title: 'text',
+      series: 'series',
+      period: ['1D', '1W', '1M'],
+      style: ['line', 'bar'],
+    },
+    ['title', 'series'],
+  ),
+  'finance-flow': definition(
+    'Local financial workflow with validated inputs, fee review, explicit confirmation and simulated outcomes. No network or real transactions.',
+    {
+      workflow: [...workflowKinds],
+      side: ['Buy', 'Sell'],
+      initialStage: [...flowStates],
+      outcome: ['success', 'pending', 'failed'],
+      currency: ['INR', 'USD'],
+      density: ['compact', 'comfortable'],
+    },
+    ['workflow'],
+  ),
   'feed-item': definition(
     'Reusable social/activity post with author, handle, timestamp, body, local like and save actions.',
     { author: 'text', handle: 'text', body: 'text', time: 'text' },

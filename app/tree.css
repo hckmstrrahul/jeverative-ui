@@ -734,3 +734,32 @@
   background: var(--backgroundPrimary);
   padding-bottom: 12px;
 }
+
+.finance-flow { border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; background: var(--backgroundPrimary); }
+.finance-flow header h2 { font-size: 18px; font-weight: 500; line-height: 28px; }
+.finance-flow header p, .finance-state > p { color: var(--contentSecondary); font-size: 12px; line-height: 18px; }
+.finance-flow .finance-eyebrow { margin-bottom: 4px; }
+.finance-flow h2:focus { outline: none; }
+.finance-steps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--contentSecondary); }
+.finance-steps [aria-current] { color: var(--contentPrimary); font-weight: 600; }
+.finance-summary { display: grid; gap: 10px; }
+.finance-summary > div { display: flex; justify-content: space-between; gap: 20px; }
+.finance-summary dt { color: var(--contentSecondary); }
+.finance-summary dd { text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.finance-total { border-top: 1px solid var(--border); padding-top: 12px; font-weight: 600; }
+.finance-fields { display: grid; gap: 14px; margin-bottom: 16px; }
+.finance-fields label { display: block; margin-bottom: 6px; }
+.finance-fields select { width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--backgroundPrimary); }
+.finance-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.finance-actions > button { flex: 1; }
+.finance-state { display: flex; flex-direction: column; gap: 14px; }
+.finance-error { color: var(--contentNegative, #b42318); font-size: 12px; margin: 6px 0; }
+.finance-comfortable { padding: 24px; gap: 24px; }
+@container tree (max-width: 500px) { .finance-flow { padding: 16px; } .finance-actions > button { min-height: 44px; } }
+.finance-chart h2 { font-size: 18px; font-weight: 500; line-height: 28px; }
+.finance-chart > p { font-size: 12px; color: var(--contentSecondary); }
+.finance-chart svg { width: 100%; height: auto; max-height: 260px; margin-top: 12px; }
+.finance-ranges { display: flex; gap: 8px; justify-content: center; }
+
+.finance-flow { width: 100%; max-width: 760px; }
+@container tree (min-width: 600px) { .finance-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -26,6 +26,7 @@ The engine batches decisions into **1–2 Jev calls**. Simple compositions can s
 - Profiles, settings, dashboards, portfolios, planners and checkout interfaces.
 - Stock and crypto detail pages with price charts, holdings, performance, market depth and docked Buy/Sell actions.
 - Mutual funds/SIP, banking/transfers, credit repayments, budgets, merchant invoices/settlements, insurance and identity verification prototypes.
+- Interactive fintech flows for orders, fund investments, deposits, transfers, card controls, repayments, claims, invoices, verification and expenses. Forms validate inputs, show editable reviews and simulate success, pending or failed outcomes locally.
 - Personal portfolio websites with projects, about, expertise and contact groups, separate from investment portfolios.
 - Discovery and social feeds, composers, navigation and inbox panes.
 - Booking interfaces for flights, trains, buses, car rentals, restaurants, events and appointments.

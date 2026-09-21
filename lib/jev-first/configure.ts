@@ -40,6 +40,45 @@ export function configurationFor(
   if (!variation)
     for (const c of selected)
       for (const n of c.nodes) {
+        if (n.kind === 'finance-flow') {
+          choose(
+            n.id,
+            'density',
+            n.props.density ?? 'compact',
+            { compact: 'compact', comfortable: 'comfortable' },
+            'Financial form density. Keep controls labelled and review legible.',
+          );
+          choose(
+            n.id,
+            'currency',
+            n.props.currency ?? 'INR',
+            { inr: 'INR', usd: 'USD' },
+            'Currency of illustrative sample figures; do not imply currency conversion.',
+          );
+          choose(
+            n.id,
+            'initialStage',
+            n.props.initialStage ?? 'details',
+            {
+              details: 'details',
+              input: 'input',
+              review: 'review',
+              loading: 'loading',
+              empty: 'empty',
+              failed: 'failed',
+              pending: 'pending',
+              success: 'success',
+            },
+            'Initial workflow state. Only change when the user explicitly requests that state.',
+          );
+          choose(
+            n.id,
+            'outcome',
+            n.props.outcome ?? 'success',
+            { success: 'success', pending: 'pending', failed: 'failed' },
+            'Simulated submission outcome; use pending or failed only when requested.',
+          );
+        }
         if (n.kind === 'panel')
           choose(
             n.id,
@@ -72,7 +111,15 @@ export function configurationFor(
             { compact: 32, medium: 48, large: 64 },
             'Profile avatar size.',
           );
-        if (n.kind === 'chart')
+        if (n.kind === 'finance-chart')
+          choose(
+            n.id,
+            'period',
+            n.props.period ?? '1W',
+            { day: '1D', week: '1W', month: '1M' },
+            'Starting chart range. Respect explicit day/week/month requests.',
+          );
+        if (n.kind === 'chart' || n.kind === 'finance-chart')
           choose(
             n.id,
             'style',

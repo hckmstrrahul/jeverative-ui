@@ -108,8 +108,12 @@ function assemble(
   layout: string,
   placements?: Record<string, string>,
 ): UIDocument {
-  const docks = selected.filter((c) => c.nodes[0].kind === 'mint-action-dock');
-  selected = selected.filter((c) => c.nodes[0].kind !== 'mint-action-dock');
+  const docks = selected.filter((c) =>
+    ['mint-action-dock', 'dialog'].includes(c.nodes[0].kind),
+  );
+  selected = selected.filter(
+    (c) => !['mint-action-dock', 'dialog'].includes(c.nodes[0].kind),
+  );
   const nodes: UINode[] = [
     root(device, layout),
     {

@@ -1,4 +1,11 @@
 'use client';
+import { FinanceChart } from './finance-chart';
+import { FinanceFlow } from './finance-flow';
+import type {
+  WorkflowKind,
+  FlowStage,
+  FlowState,
+} from '@/lib/fintech/workflows';
 import { FeedItem, PostComposer, InboxPane } from './social-primitives';
 import { ListingCard } from './listing-card';
 import { Fragment, useState, type ReactNode } from 'react';
@@ -222,6 +229,28 @@ export function TreeExtended({
     />
   );
   switch (node.kind) {
+    case 'finance-chart':
+      return (
+        <FinanceChart
+          key={`${node.id}-${text('period')}-${text('style')}`}
+          title={text('title')}
+          series={p.series as { label: string; value: number }[]}
+          period={text('period', '1W')}
+          style={text('style', 'line')}
+        />
+      );
+    case 'finance-flow':
+      return (
+        <FinanceFlow
+          key={`${node.id}-${text('workflow')}-${text('initialStage')}-${text('outcome')}-${text('currency')}`}
+          side={p.side as 'Buy' | 'Sell' | undefined}
+          kind={p.workflow as WorkflowKind}
+          initialStage={p.initialStage as FlowStage | undefined}
+          outcome={p.outcome as FlowState['outcome'] | undefined}
+          currency={text('currency', 'INR')}
+          density={text('density', 'compact')}
+        />
+      );
     case 'aspect-ratio':
       return <AspectRatio ratio={num('ratio', 16 / 9)}>{content}</AspectRatio>;
     case 'collapsible':

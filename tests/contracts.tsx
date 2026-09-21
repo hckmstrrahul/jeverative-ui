@@ -670,3 +670,5 @@ await import("./jev-first-contracts");
 import "./server-key-contracts";
 
 import "./local-connection-contracts";
+
+await import('./fintech-contracts');

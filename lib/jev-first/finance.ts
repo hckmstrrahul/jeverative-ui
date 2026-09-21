@@ -1,3 +1,4 @@
+import { workflows, workflowKinds, stageForPrompt } from '../fintech/workflows';
 import type { Candidate } from './candidates';
 import { validateDocument, type UIDocument, type UINode } from '../tree/spec';
 
@@ -14,10 +15,11 @@ export function financeCandidates(
     prompt,
   );
   const domains = [
+    ['card', /\b(cards?|freeze|spending limit)\b/i, 'Cards'],
     ['fund', /\b(mutual fund|sip|fund detail)\b/i, 'Mutual funds'],
     [
       'bank',
-      /\b(banking|bank account|wallet|money transfer|upi|remittance)\b/i,
+      /\b(banking|bank account|wallet|money transfer|transfer|send money|deposit|add money|top.up|upi|remittance)\b/i,
       'Accounts and transfers',
     ],
     [
@@ -138,7 +140,7 @@ export function financeCandidates(
   const chart = (name: string) =>
     add(
       'chart',
-      'chart',
+      'finance-chart',
       {
         title: name,
         style: 'line',
@@ -278,35 +280,7 @@ export function financeCandidates(
       ['Side', 'Quantity', 'Price', 'Status'],
       [['Buy', '5', '₹1,525.00', 'Limit · Pending']],
     );
-    add(
-      'ticket',
-      'panel',
-      { title: 'Order ticket', gap: 12 },
-      [
-        [
-          'quantity',
-          'mint-order-input',
-          {
-            label: 'Quantity',
-            bind: `${domain}_quantity`,
-            mode: 'quantity',
-            value: 1,
-          },
-        ],
-        [
-          'price',
-          'mint-order-input',
-          {
-            label: 'Limit price',
-            bind: `${domain}_price`,
-            mode: 'price',
-            value: 1538,
-          },
-        ],
-        button('review', 'Review order'),
-      ],
-      /order ticket|limit order/i.test(prompt),
-    );
+
     add(
       'dock',
       'mint-action-dock',
@@ -348,14 +322,25 @@ export function financeCandidates(
         ['Cash', '10%'],
       ],
     );
+  } else if (domain === 'card') {
     add(
-      'invest',
-      'panel',
-      { title: 'Start investing', gap: 12 },
+      'balance',
+      'metric',
+      {
+        label: 'Everyday card •• 4242',
+        value: '₹18,200',
+        detail: 'Available to spend · Sample data',
+      },
+      [],
+      true,
+    );
+    table(
+      'transactions',
+      'Card transactions',
+      ['Merchant', 'Amount', 'Status'],
       [
-        input('amount', 'Investment amount'),
-        input('frequency', 'SIP frequency'),
-        button('review', 'Review investment'),
+        ['Coffee House', '₹240', 'Settled'],
+        ['Metro', '₹80', 'Pending'],
       ],
       true,
     );
@@ -381,18 +366,6 @@ export function financeCandidates(
       ],
       true,
     );
-    add(
-      'transfer',
-      'panel',
-      { title: 'Transfer money', gap: 12 },
-      [
-        input('recipient', 'Recipient or UPI ID'),
-        input('amount', 'Amount'),
-        input('note', 'Reference'),
-        button('review', 'Review transfer'),
-      ],
-      true,
-    );
   } else if (domain === 'credit') {
     add(
       'balance',
@@ -413,13 +386,6 @@ export function financeCandidates(
         ['5 Oct', '₹10,200', '₹2,300', 'Upcoming'],
         ['5 Nov', '₹10,300', '₹2,200', 'Scheduled'],
       ],
-      true,
-    );
-    add(
-      'payment',
-      'panel',
-      { title: 'Manage repayment', gap: 12 },
-      [input('amount', 'Payment amount'), button('pay', 'Review payment')],
       true,
     );
   } else if (domain === 'budget') {
@@ -445,12 +411,6 @@ export function financeCandidates(
       ],
       true,
     );
-    add('expense', 'panel', { title: 'Add expense', gap: 12 }, [
-      input('description', 'Description'),
-      input('amount', 'Amount'),
-      input('category', 'Category'),
-      button('save', 'Save expense'),
-    ]);
   } else if (domain === 'merchant') {
     add(
       'balance',
@@ -473,11 +433,6 @@ export function financeCandidates(
       ],
       true,
     );
-    add('invoice', 'panel', { title: 'Create invoice', gap: 12 }, [
-      input('customer', 'Customer email'),
-      input('amount', 'Amount'),
-      button('create', 'Preview invoice'),
-    ]);
   } else if (domain === 'insurance') {
     table(
       'policies',
@@ -489,42 +444,99 @@ export function financeCandidates(
       ],
       true,
     );
-    add(
-      'claim',
-      'panel',
-      { title: 'Start a claim', gap: 12 },
-      [
-        input('policy', 'Policy number'),
-        input('description', 'Incident details'),
-        button('review', 'Review claim'),
-      ],
-      true,
-    );
-  } else {
-    add(
-      'identity',
-      'panel',
-      { title: 'Identity details', gap: 12 },
-      [
-        input('name', 'Legal name'),
-        input('dob', 'Date of birth'),
-        input('country', 'Country of residence'),
-      ],
-      true,
-    );
-    add(
-      'verification',
-      'panel',
-      { title: 'Verification checklist', gap: 12 },
-      [
-        text(
-          'steps',
-          '1. Confirm personal details\n2. Verify identity document\n3. Review and submit',
-        ),
-        button('continue', 'Continue verification'),
-      ],
-      true,
-    );
   }
+  // Replace disconnected notify-only forms with compiler-owned interactive workflows.
+  const relevant = workflowKinds.filter((kind) =>
+    workflows[kind].domains.includes(domain),
+  );
+  const explicit = relevant.filter((kind) =>
+    workflows[kind].match.test(prompt),
+  );
+  const active = explicit.length ? explicit : relevant.slice(0, 1);
+  const stage = stageForPrompt(prompt);
+  const outcome = /pending|processing/i.test(prompt)
+    ? 'pending'
+    : /fail|error/i.test(prompt)
+      ? 'failed'
+      : 'success';
+  for (const workflow of active) {
+    if (workflow === 'trade') {
+      for (const side of ['Buy', 'Sell'] as const) {
+        const suffix = side.toLowerCase();
+        add(
+          `${suffix}dialog`,
+          'dialog',
+          {
+            title: `${side} order`,
+            description: 'Simulated order · No real transaction',
+          },
+          [
+            [
+              'flow',
+              'finance-flow',
+              {
+                workflow,
+                side,
+                initialStage: stage === 'details' ? 'input' : stage,
+                outcome,
+                currency: 'INR',
+                density: 'compact',
+              },
+            ],
+          ],
+          true,
+        );
+        const dock = out.find((c) => c.id.endsWith('_dock'));
+        const button = dock?.nodes.find((n) => n.props.label === side);
+        if (button)
+          button.props = {
+            label: side,
+            variant: side === 'Sell' ? 'destructive' : 'default',
+            action: 'toggle',
+            target: `jf_fin_${domain}_${suffix}dialog`,
+          };
+      }
+      // A requested state or ticket is visible without having to open the dock.
+      if (stage !== 'details' || /ticket|order entry/i.test(prompt))
+        add(
+          `workflow-${workflow}`,
+          'finance-flow',
+          {
+            workflow,
+            initialStage: stage === 'details' ? 'input' : stage,
+            outcome,
+            currency: 'INR',
+            density: 'compact',
+          },
+          [],
+          true,
+        );
+    } else
+      add(
+        `workflow-${workflow}`,
+        'finance-flow',
+        {
+          workflow,
+          initialStage: stage,
+          outcome,
+          currency: 'INR',
+          density: 'compact',
+        },
+        [],
+        true,
+      );
+  }
+  if (domain === 'kyc')
+    table(
+      'checklist',
+      'Verification checklist',
+      ['Step', 'Status'],
+      [
+        ['Personal details', 'Required'],
+        ['Identity document', 'Demo selection only'],
+        ['Review', 'Before submission'],
+      ],
+      true,
+    );
   return out;
 }

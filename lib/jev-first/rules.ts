@@ -48,7 +48,7 @@ export function sensibleLayout(
   )
     return layout === 'resizable' ? 'resizable' : 'main-left';
   const dense = selected.some((c) =>
-    ['chart', 'table', 'data-table'].includes(c.nodes[0].kind),
+    ['chart', 'finance-chart', 'table', 'data-table'].includes(c.nodes[0].kind),
   );
   // Wide data must never occupy a narrow reading column or three equal panes.
   if (
@@ -111,11 +111,18 @@ export function constrainPlacement(
       'expense',
       'invoice',
       'claim',
+      'workflow',
       'dock',
     ];
     for (const c of finance) {
       out[`parent_${c.id}`] = 'a';
-      out[`order_${c.id}`] = String(sequence.indexOf(c.id.split('_').at(-1)!));
+      out[`order_${c.id}`] = String(
+        sequence.indexOf(
+          c.id.split('_').at(-1)!.startsWith('workflow')
+            ? 'workflow'
+            : c.id.split('_').at(-1)!,
+        ),
+      );
     }
     out.group_a = 'stack';
   }
@@ -159,7 +166,9 @@ export function constrainPlacement(
         selected.some(
           (c) =>
             c.id === id &&
-            ['chart', 'table', 'data-table'].includes(c.nodes[0].kind),
+            ['chart', 'finance-chart', 'table', 'data-table'].includes(
+              c.nodes[0].kind,
+            ),
         ),
       )
     ) {

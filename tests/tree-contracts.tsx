@@ -784,6 +784,7 @@ for (const [kind, definition] of Object.entries(extendedDefinitions)) {
       props[key] = key === 'min' ? 0 : key === 'max' ? 100 : 1;
     else if (field === 'options') props[key] = ['One', 'Two'];
     else if (field === 'rows') props[key] = [['Alpha', 'Beta']];
+    else if (field === 'series') props[key] = [{label:'Mon',value:100},{label:'Tue',value:110}];
   }
   if (['calendar', 'date-picker'].includes(kind)) props.value = '2026-09-21';
   if (kind === 'input-otp') props.value = '1234';
