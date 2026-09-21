@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
 import { Menubar as MenubarPrimitive } from '@base-ui/react/menubar';
 
+import {useMintTheme} from '@/components/mint-theme';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -20,7 +21,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon } from '@/components/icons';
 
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
@@ -256,6 +257,7 @@ function MenubarSubContent({
     <DropdownMenuSubContent
       data-slot="menubar-sub-content"
       className={cn(
+          useMintTheme(),
         'bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 min-w-32 rounded-lg p-1 shadow-lg ring-1 duration-100 cn-menu-target cn-menu-translucent',
         className,
       )}

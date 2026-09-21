@@ -40,3 +40,7 @@ next-env.d.ts
 !.env.example
 
 *.tsbuildinfo
+
+# Local benchmark captures and deployment bundles
+/benchmark-*.json
+/.output/

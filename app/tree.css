@@ -1,0 +1,710 @@
+.tree-view {
+  min-height: 100%;
+  background: var(--backgroundPrimary);
+  container: tree / inline-size;
+  color: var(--contentPrimary);
+  font:
+    400 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-page {
+  --tree-gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tree-gap);
+  padding: 24px;
+  margin-inline: auto;
+  min-width: 0;
+}
+.tree-width-reading {
+  max-width: 760px;
+}
+.tree-stack,
+.tree-panel,
+.tree-form {
+  --tree-gap: 24px;
+  display: flex;
+  gap: var(--tree-gap);
+  min-width: 0;
+}
+.tree-column,
+.tree-panel,
+.tree-form {
+  flex-direction: column;
+}
+.tree-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.tree-row > [data-tree-node] {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+.tree-row > [data-kind='stack'],
+.tree-row > [data-kind='panel'],
+.tree-row > [data-kind='text'] {
+  flex: 1 1 180px;
+}
+.tree-grid {
+  display: grid;
+  gap: var(--tree-gap, 24px);
+  grid-template-columns: repeat(var(--tree-columns, 2), minmax(0, 1fr));
+}
+.tree-grid > [data-tree-node] {
+  min-width: 0;
+}
+.tree-grid > [data-kind='table'],
+.tree-grid > [data-kind='chart'] {
+  grid-column: 1/-1;
+}
+.tree-ratio-main-left {
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+}
+.tree-ratio-main-right {
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+}
+.tree-surface-card {
+  border: 1px solid var(--borderPrimary);
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--backgroundSurfaceZ1);
+}
+.tree-surface-subtle {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--backgroundSecondary);
+}
+.tree-form {
+  max-width: 760px;
+}
+.tree-heading {
+  font-family: Sohne, sans-serif;
+  font-weight: 500;
+  text-wrap: balance;
+}
+.tree-view h1.tree-heading {
+  font-size: 20px;
+  line-height: 32px;
+}
+.tree-view h2.tree-heading,
+.tree-section-heading h2 {
+  font:
+    500 18px/28px Sohne,
+    sans-serif;
+}
+.tree-view h3.tree-heading {
+  font-size: 16px;
+  line-height: 24px;
+}
+.tree-section-heading p {
+  margin-top: 6px;
+  color: var(--contentSecondary);
+}
+.tree-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.tree-field [data-slot='select-trigger'] {
+  width: 100%;
+}
+.tree-preference {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  min-height: 48px;
+}
+.tree-preference > div {
+  flex: 1;
+  min-width: 0;
+}
+.tree-preference > button {
+  flex-shrink: 0;
+}
+.tree-description {
+  color: var(--contentSecondary);
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 4px;
+}
+.tree-radio,
+.tree-between {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tree-between {
+  justify-content: space-between;
+}
+.tree-text-caption {
+  font-size: 12px;
+  line-height: 18px;
+}
+.tree-tone-secondary {
+  color: var(--contentSecondary);
+}
+.tree-tone-positive {
+  color: var(--contentPositive);
+}
+.tree-tone-negative {
+  color: var(--contentNegative);
+}
+.tree-metric p {
+  color: var(--contentSecondary);
+}
+.tree-metric strong {
+  display: block;
+  margin: 4px 0;
+  font:
+    500 20px/32px Sohne,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.tree-chart,
+.tree-records {
+  min-width: 0;
+}
+.tree-chart .tree-section-heading,
+.tree-records .tree-section-heading {
+  margin-bottom: 24px;
+}
+.tree-view [data-slot='tabs-list'] {
+  max-width: 100%;
+  overflow-x: auto;
+  justify-content: flex-start;
+}
+.tree-view [hidden] {
+  display: none !important;
+}
+.tree-view [data-tree-node] {
+  animation: tree-enter 160ms ease-out both;
+}
+@keyframes tree-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@container tree (max-width: 960px) {
+  .tree-grid {
+    grid-template-columns: repeat(
+      min(var(--tree-columns, 2), 2),
+      minmax(0, 1fr)
+    );
+  }
+  .tree-page {
+    padding: 24px;
+  }
+}
+@container tree (max-width: 600px) {
+  .tree-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tree-page {
+    padding: 16px;
+  }
+  .tree-surface-card,
+  .tree-surface-subtle {
+    padding: 16px;
+  }
+  .tree-row > [data-kind='input'],
+  .tree-row > [data-kind='select'] {
+    flex: 1 1 100%;
+  }
+  .tree-view h1.tree-heading {
+    font-size: 20px;
+    line-height: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-view [data-tree-node] {
+    animation: none;
+  }
+}
+
+/* Adaptive extensions inherit the same Mint tokens and container width. */
+.tree-extension-content {
+  gap: 16px;
+  min-width: 0;
+}
+.tree-grid > [data-kind='data-table'],
+.tree-grid > [data-kind='resizable'],
+.tree-grid > [data-kind='message-scroller'] {
+  grid-column: 1 / -1;
+}
+.tree-view [data-slot='button-group'] > [data-tree-node] {
+  display: contents;
+}
+.tree-view [data-slot='carousel'] {
+  min-width: 0;
+}
+.tree-view [data-kind='calendar'] {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.tree-view [data-kind='navigation-menu'] {
+  overflow-x: auto;
+}
+.tree-view [data-kind='data-table'] th button {
+  text-align: inherit;
+  padding-block: 8px;
+  width: 100%;
+}
+.tree-view [data-kind='skeleton'] {
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-view [data-slot='skeleton'],
+  .tree-view [data-slot='spinner'] {
+    animation: none;
+  }
+}
+
+/* Mint usage v0.33: semantic weight, surface-aware tokens, compact structure. */
+.tree-tone-positive,
+.tree-tone-negative {
+  font-weight: 500;
+}
+.tree-surface-card {
+  --border: var(--borderPrimaryOnSurfaceZ1);
+  --muted: var(--backgroundSecondaryOnSurfaceZ1);
+  --accent: var(--backgroundSecondaryOnSurfaceZ1);
+}
+.tree-surface-card .tree-surface-subtle {
+  background: var(--backgroundSecondaryOnSurfaceZ1);
+}
+.tree-surface-card .tree-surface-card {
+  background: var(--backgroundSurfaceZ2);
+  border-color: var(--borderPrimaryOnSurfaceZ1);
+  --border: var(--borderPrimaryOnSurfaceZ2);
+  --muted: var(--backgroundSecondaryOnSurfaceZ2);
+  --accent: var(--backgroundSecondaryOnSurfaceZ2);
+}
+.tree-view [data-slot='tabs-trigger'] {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font:
+    500 16px/24px Sohne,
+    sans-serif;
+}
+.tree-preference {
+  gap: 16px;
+}
+.tree-preference:has(.tree-description) {
+  min-height: 56px;
+}
+.tree-view [data-slot='item-title'] {
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-view [data-slot='item-description'] {
+  font:
+    400 12px/18px GrowwSans,
+    sans-serif;
+  color: var(--contentSecondary);
+}
+.tree-view [data-slot='item-content'] {
+  gap: 2px;
+}
+.tree-view [data-slot='item'] {
+  padding: 16px;
+  border-radius: 0;
+  background: transparent;
+}
+.tree-view[data-density='compact'] .tree-panel,
+.tree-view[data-density='compact'] .tree-form {
+  gap: min(var(--tree-gap, 16px), 16px);
+}
+.tree-view[data-density='compact'] .tree-chart .tree-section-heading,
+.tree-view[data-density='compact'] .tree-records .tree-section-heading {
+  margin-bottom: 16px;
+}
+
+/* Mint anatomy: compact composition without shrinking control targets. */
+.tree-finance {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  font:
+    400 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-finance > span {
+  color: var(--contentSecondary);
+}
+.tree-finance strong {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.tree-finance-anchor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tree-finance-anchor strong {
+  font:
+    500 20px/32px Sohne,
+    sans-serif;
+}
+.tree-finance strong[data-unavailable='true'] {
+  font:
+    400 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-mint-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  min-height: 64px;
+}
+.tree-mint-row[data-description='true'] {
+  min-height: 72px;
+}
+.tree-mint-row[data-density='compact'] {
+  min-height: 48px;
+  padding-block: 12px;
+}
+.tree-mint-row[data-density='compact'][data-description='true'],
+.tree-mint-row[data-density='compact'][data-leading='thumbnail'] {
+  min-height: 56px;
+  padding-block: 8px;
+}
+.tree-mint-row[data-density='compact'][data-leading='thumbnail'][data-description='true'] {
+  min-height: 64px;
+}
+.tree-mint-row[data-divider='true'] {
+  border-bottom: 1px solid var(--borderPrimary);
+}
+.tree-mint-row > svg,
+.tree-mint-row > [data-slot='avatar'] {
+  flex-shrink: 0;
+}
+.tree-mint-row-copy {
+  min-width: 0;
+  flex: 1;
+}
+.tree-mint-row-copy strong {
+  display: block;
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tree-mint-row-copy p {
+  margin-top: 2px;
+  font:
+    400 12px/18px GrowwSans,
+    sans-serif;
+  color: var(--contentSecondary);
+}
+.tree-mint-row-value {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-mint-appbar {
+  padding-top: 0;
+}
+.tree-device-mobile .tree-mint-appbar {
+  padding-top: 24px;
+}
+.tree-mint-navbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.tree-mint-appbar-title {
+  min-width: 0;
+  flex: 1;
+}
+.tree-mint-appbar-title strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font:
+    500 18px/28px Sohne,
+    sans-serif;
+}
+.tree-mint-appbar-title:has(p) strong {
+  font-size: 16px;
+  line-height: 24px;
+}
+.tree-mint-appbar-title p {
+  color: var(--contentSecondary);
+  font:
+    400 12px/18px GrowwSans,
+    sans-serif;
+}
+.tree-mint-appbar-actions {
+  display: flex;
+  gap: 8px;
+}
+.tree-mint-appbar-actions [data-slot='avatar'] {
+  width: 32px;
+  height: 32px;
+}
+.tree-mint-bottomnav {
+  display: flex;
+  min-height: 64px;
+  border-top: 1px solid var(--borderPrimary);
+  background: var(--backgroundPrimary);
+}
+.tree-mint-bottomnav button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--contentTertiary);
+  font:
+    500 10px/14px Sohne,
+    sans-serif;
+}
+.tree-mint-bottomnav button span {
+  white-space: nowrap;
+}
+.tree-mint-bottomnav button[aria-current='page'] {
+  color: var(--contentAccentSecondary);
+}
+.tree-mint-bottomnav button:active {
+  background: var(--backgroundTransparentPressed);
+}
+.tree-view .tree-mint-pill {
+  border-radius: 99px;
+  height: 32px;
+  padding: 0 12px;
+  gap: 6px;
+  font:
+    500 12px/18px GrowwSans,
+    sans-serif;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--contentSecondary);
+}
+.tree-view .tree-mint-pill[aria-pressed='true'] {
+  background: var(--backgroundTertiary);
+  border-color: var(--borderNeutral);
+  color: var(--contentPrimary);
+}
+.tree-mint-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tree-mint-pills[data-variant='minimal'] .tree-mint-pill {
+  border-color: transparent;
+  background: transparent;
+}
+.tree-mint-pills[data-variant='minimal'] .tree-mint-pill[aria-pressed='true'] {
+  color: var(--contentAccentSecondary);
+}
+.tree-mint-order {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.tree-mint-order label {
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-mint-order-control {
+  width: 120px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.tree-mint-order-control input {
+  min-width: 0;
+  height: 40px;
+  text-align: right;
+  padding-inline: 8px;
+}
+.tree-mint-order-control:has(button) input {
+  padding-inline: 2px;
+  text-align: center;
+  appearance: textfield;
+}
+.tree-mint-order-control input::-webkit-inner-spin-button {
+  appearance: none;
+}
+.tree-mint-dock {
+  background: var(--backgroundPrimary);
+  border-top: 1px solid var(--borderPrimary);
+  padding-top: 16px;
+}
+.tree-mint-dock > p {
+  font:
+    400 12px/18px GrowwSans,
+    sans-serif;
+  margin-bottom: 12px;
+}
+.tree-mint-dock > div {
+  display: flex;
+  gap: 12px;
+}
+.tree-mint-dock > div > div {
+  flex: 1;
+}
+.tree-view .tree-mint-dock [data-slot='button'] {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 8px;
+  font:
+    500 16px/24px GrowwSans,
+    sans-serif;
+}
+.tree-view [data-slot='tabs-list'][data-variant='line'] {
+  min-height: 48px;
+  padding: 0;
+  gap: 0;
+  border-bottom: 1px solid var(--borderPrimary);
+  border-radius: 0;
+  justify-content: flex-start;
+}
+.tree-view [data-slot='tabs-trigger'] {
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  transition: color 120ms ease-out;
+}
+.tree-view [data-slot='tabs-trigger']::after {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 99px 99px 0 0;
+  background: var(--borderNeutral);
+}
+.tree-panel[data-short='true']:not(.tree-surface-plain) {
+  border-radius: 8px;
+}
+.tree-view [data-mint-size] {
+  position: relative;
+  border-radius: 8px;
+}
+.tree-view [data-mint-size='small'] {
+  height: 32px;
+  font:
+    500 12px/18px GrowwSans,
+    sans-serif;
+}
+.tree-view [data-mint-size='medium'] {
+  height: 40px;
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+}
+.tree-view [data-mint-size='large'] {
+  height: 48px;
+  width: 100%;
+  font:
+    500 16px/24px GrowwSans,
+    sans-serif;
+}
+.tree-view
+  [data-mint-accent='true']:is(
+    [data-variant='outline'],
+    [data-variant='ghost']
+  ):not(:disabled) {
+  color: var(--contentAccentSecondary);
+}
+.tree-view [data-mint-accent='true'][data-variant='outline']:not(:disabled) {
+  border-color: var(--borderAccentSecondary);
+}
+.tree-surface-card,
+.tree-surface-subtle {
+  --tree-pressed: var(--backgroundTransparentPressedOnSurfaceZ1);
+}
+.tree-surface-card .tree-surface-card {
+  --tree-pressed: var(--backgroundTransparentPressedOnSurfaceZ2);
+}
+.tree-mint-row:has(button):active {
+  background: var(--tree-pressed, var(--backgroundTransparentPressed));
+}
+.tree-view [data-slot='tabs-trigger'] {
+  flex-grow: 0;
+}
+.tree-surface-card,
+.tree-surface-subtle {
+  --backgroundDisabled: var(--backgroundDisabledOnSurfaceZ1);
+  --borderDisabled: var(--borderDisabledOnSurfaceZ1);
+}
+.tree-surface-card .tree-surface-card {
+  --backgroundDisabled: var(--backgroundDisabledOnSurfaceZ2);
+  --borderDisabled: var(--borderDisabledOnSurfaceZ2);
+}
+.tree-view button:focus-visible {
+  outline: 2px solid var(--borderAccentSecondary);
+  outline-offset: 2px;
+}
+
+/* One date value, with an adjacent calendar action. Labels are owned in JSX,
+   including portalled forms, so their accessible names never duplicate. */
+.tree-date-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tree-date-control > input {
+  flex: 1;
+  min-width: 140px;
+}
+.tree-date-control > button {
+  flex: none;
+}
+.tree-panel > [data-kind='chart'] .tree-section-heading h2 {
+  font:
+    500 14px/20px GrowwSans,
+    sans-serif;
+}
+
+/* A toolbar label must stay next to its controls; between rows still spread via justify-content. */
+.tree-row > [data-kind='text'] {
+  flex: 0 1 auto;
+}
+
+@container tree (min-width: 1000px) {
+  .tree-conversation-split {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(0, 2fr);
+    align-items: start;
+  }
+  .tree-conversation-split > [data-tree-node] {
+    min-width: 0;
+    grid-column: auto;
+  }
+}
+/* Recharts 3 uses tick-label wrappers; don't rely on older wrapper selectors. */
+.tree-chart .recharts-cartesian-axis-tick-value {
+  fill: var(--contentSecondary);
+}
+.mint-theme.dark input {
+  color-scheme: dark;
+}
+.mint-theme.light input {
+  color-scheme: light;
+}

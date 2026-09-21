@@ -1,0 +1,177 @@
+[
+  {
+    "app": "Skillshare",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/e76d27b0-9688-49dd-8e48-1ea37d7c9ea5",
+    "observed": "Identity column beside tabbed posts and project tiles; identity remains a separate anchor.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Substack",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/8ba7d093-10f9-4dbd-8e83-c7021b3adf95",
+    "observed": "Cover banner above identity, action row, content tabs and activity feed.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Savee",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/be7f012b-a3a7-4027-8ec6-9e2c2a9000f7",
+    "observed": "Centered identity and actions above a broad image collection with compact stats.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "CVS Health",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/7bfd68bd-058d-4b39-b097-b448b3ac6ab4",
+    "observed": "Compact identity and edit action above separate account and health destination groups.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "ChatGPT",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/cb1e2e78-a7f7-4e76-a1e2-67d509361235",
+    "observed": "Centered identity above grouped account rows with icon, value and chevron anatomy.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Jomo",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/ecb928b5-6d8c-4677-9604-9ea5242a3525",
+    "observed": "Compact identity, current-plan card and grouped general settings rows.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Tally",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/8dd9ce6a-c8cb-46de-abe9-1d53fb2e9188",
+    "observed": "Readable security, connected-account and danger sections separated by generous whitespace.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Magnific",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/75651e2a-13a5-49d9-b115-1bea89ab9681",
+    "observed": "Global navigation plus secondary settings navigation; password, security, integrations, notifications and sessions are distinct sections.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Base44",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/39833a72-4b70-46ef-b05c-f990e8cbfe92",
+    "observed": "Settings category rail with separate integration, two-factor and destructive-action cards.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "NYTimes",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/9667af4a-22b9-4584-b92d-749f4a9eedd0",
+    "observed": "Topic-level toggles pair strong labels with supporting descriptions; continuation action follows the list.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Quicken",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/a67919a5-de03-4df3-b275-71e4fb6fa930",
+    "observed": "A parent pause control precedes subordinate notification choices, which are disabled when paused.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Satispay",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/39970997-a7e2-4de7-989d-32a583123895",
+    "observed": "Notification topics group their own push and email channels rather than repeating a generic settings list.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Programa",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/894a77ba-3553-4f11-a721-e274fd07b621",
+    "observed": "Project scope and view controls precede a board; each status column has its own task count and creation affordance.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Pinterest",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/22864846-19a6-4f9d-af14-fb6322a75cd9",
+    "observed": "Overall metrics grouped in a summary band above a wide performance chart; chart-level controls sit with the chart.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Plum",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/9275b181-4dce-4f1d-9c84-a12803b3174f",
+    "observed": "Discovery search and category chips precede named investment categories with compact product cards.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Square",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/1f4158f5-53d6-4ff0-94dd-6ea6e3e6727f",
+    "observed": "Conversation list, active message thread and contact context occupy separate columns; composer attaches to thread.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Klarna",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/ab04c0f2-28f4-4b54-9a72-76cdd148428a",
+    "observed": "Category filters occupy a desktop side column; result count and sorting precede a multi-column product grid.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Life Reset",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/708859a9-bb1d-4cae-8f46-01397186c68b",
+    "observed": "Progress steps precede a short form; labelled inputs keep units visible and continuation is anchored at the bottom.",
+    "reviewed": "2026-09-20"
+  },
+  {
+    "app": "Juicebox",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/92ab8c8e-bd90-40a8-87eb-73bcfde6c7d4",
+    "observed": "Account navigation at left; separate editable account sections with helper/action strips. Borrow grouping, not the generous whitespace.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Dovetail",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/d6b3c793-eb67-47a5-ad2e-2e4a42cfdbde",
+    "observed": "Settings subnavigation beside an editable profile form; avatar aligned to the right; identities and access are separate sections.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Airwallex",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/c297f16f-e1b0-47d6-b149-17cafab328a3",
+    "observed": "Personal details and contact/login are grouped separately; edit actions align to section edges and save/cancel remain local to the edited section.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Givingli",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/61fcb959-6603-49ef-9a1c-d2c813659439",
+    "observed": "Identity row precedes a single cash-balance anchor and plain account-action rows. Image-source action sheet is visible; its overlay styling is not copied.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Phantom",
+    "platform": "ios",
+    "url": "https://mobbin.com/screens/f9b56a18-e350-406e-8f62-a6d2957be8f4",
+    "observed": "Compact identity header, paired Profile/Settings actions, cash balance, account list and a bottom Add Account action.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Mixpanel",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/b311e285-23f1-4e43-91c6-fc27dec02225",
+    "observed": "Metric summary grid sits above records; date/filter toolbar above; query configuration is separated into a right inspector.",
+    "reviewed": "2026-09-21"
+  },
+  {
+    "app": "Obvious",
+    "platform": "web",
+    "url": "https://mobbin.com/screens/da7a42a4-7e7f-4bbe-a77e-c29c3f2834ea",
+    "observed": "Conversation occupies a narrow left work pane beside an analytics surface with summary metrics and a visitors table; workspace navigation is separate.",
+    "reviewed": "2026-09-21"
+  }
+]

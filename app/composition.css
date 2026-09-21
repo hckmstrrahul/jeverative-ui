@@ -1,0 +1,392 @@
+/* Composition tokens apply inside the generated app, independent of studio chrome. */
+.canvas [hidden] {
+  display: none !important;
+}
+.canvas[aria-busy='true'] .emulator {
+  opacity: 1;
+}
+.composed-screen {
+  --page-space: 32px;
+  --panel-space: 24px;
+  --section-space: 24px;
+  --field-space: 16px;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.composed-screen.compact {
+  --page-space: 24px;
+  --panel-space: 16px;
+  --section-space: 24px;
+}
+.composed-shell {
+  display: flex;
+  min-width: 0;
+}
+.composed-page {
+  container-type: inline-size;
+  container-name: composed-content;
+  min-width: 0;
+  width: 100%;
+  padding: var(--page-space);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-space);
+}
+.composed-page.width-reading {
+  max-width: 744px;
+}
+.composed-page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.page-context {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
+}
+.page-context span {
+  margin-inline: 8px;
+  color: var(--border);
+}
+.composed-page-heading h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.composed-page-heading p {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  margin-top: 8px;
+  text-wrap: pretty;
+}
+.sample-label {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  margin-top: 32px;
+}
+.composed-navigation,
+.composed-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.composed-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.composed-commandbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.composed-toolbar,
+.composed-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.composed-toolbar {
+  flex: 1;
+  gap: 12px;
+}
+.composed-toolbar > .composed-component {
+  max-width: 100%;
+}
+.composed-toolbar > [data-component='input-group'] {
+  flex: 1 1 220px;
+  max-width: 360px;
+}
+.composed-toolbar > [data-component='select'],
+.composed-toolbar > [data-component='combobox'] {
+  min-width: 160px;
+}
+.composition-measure,
+.composed-component,
+.composed-section {
+  min-width: 0;
+}
+.composed-body {
+  display: grid;
+  gap: var(--section-space);
+  align-items: start;
+}
+.columns-stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+.columns-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.columns-split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.columns-split > [data-primary='true'] {
+  grid-column: 1;
+}
+.columns-split
+  > .composed-section:not([data-primary='true']):not(.section-summary):not(
+    .section-feedback
+  ) {
+  grid-column: 2;
+}
+.section-summary,
+.section-feedback {
+  grid-column: 1/-1;
+}
+.section-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--panel-space);
+  background: var(--card);
+}
+.section-heading {
+  margin-bottom: 24px;
+}
+.composed-screen h3 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+.section-heading p {
+  margin-top: 6px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+.section-components {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.section-preferences
+  .section-components
+  > .composed-component
+  + .composed-component,
+.section-agenda
+  .section-components
+  > .composed-component
+  + .composed-component {
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.composed-screen [data-slot='input'],
+.composed-screen [data-slot='select-trigger'],
+.composed-screen [data-slot='native-select'],
+.composed-screen [data-slot='input-group'] {
+  min-height: 36px;
+  font-size: 14px;
+}
+.composed-screen textarea {
+  min-height: 96px;
+}
+.composed-screen [data-slot='table-cell'] {
+  padding-block: 12px;
+}
+.composed-screen [data-slot='table'] {
+  min-width: 420px;
+}
+.composed-screen .metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.composed-screen .metrics [data-slot='card'] {
+  padding-block: var(--panel-space);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.composed-screen .metrics [data-slot='card-content'] {
+  padding-inline: var(--panel-space);
+}
+.composed-screen .metrics p,
+.composed-screen .metrics small {
+  color: var(--muted-foreground);
+}
+.composed-screen .metrics strong {
+  font-size: clamp(22px, 2.5cqi, 28px);
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.composed-rail {
+  flex: 0 0 180px;
+  border-right: 1px solid var(--border);
+  background: var(--sidebar);
+  padding: 24px 8px;
+}
+.preview-sidebar [data-slot='sidebar'] {
+  background: transparent;
+}
+.preview-sidebar [data-slot='sidebar-menu-button'] {
+  height: 36px;
+  color: var(--foreground);
+}
+.form-actions {
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.composed-utilities {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.section-conversation .section-components {
+  gap: 24px;
+}
+.section-conversation [data-component='input-group'] {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.composed-component {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+.composed-component.placement-pending {
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+}
+.composed-section[data-pending='true'] {
+  background: var(--muted);
+  border-color: var(--border);
+  border-style: dashed;
+  border-radius: 12px;
+}
+.canvas-status {
+  font-variant-numeric: tabular-nums;
+}
+.composition-rules {
+  padding-left: 16px;
+  margin-top: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+@container (max-width:700px) {
+  .composed-screen {
+    --page-space: 24px;
+    --panel-space: 20px;
+  }
+  .composed-shell {
+    flex-direction: column;
+  }
+  .composed-rail {
+    flex-basis: auto;
+    padding: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-sidebar [data-slot='sidebar-menu'] {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .composed-screen .metrics {
+    grid-template-columns: 1fr;
+  }
+  .composed-screen .metrics strong {
+    font-size: 26px;
+  }
+}
+@container (max-width:450px) {
+  .composed-screen {
+    --page-space: 16px;
+    --panel-space: 16px;
+  }
+  .composed-page-heading h2 {
+    font-size: 24px;
+  }
+  .sample-label {
+    display: none;
+  }
+  .composed-commandbar {
+    align-items: stretch;
+  }
+  .composed-toolbar {
+    flex-basis: 100%;
+  }
+  .composed-screen [data-slot='navigation-menu-list'] {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .composed-component {
+    transition: none;
+    transform: none;
+  }
+}
+
+.canvas-generation-loading {
+  position: absolute;
+  inset: 36px 0 0;
+  z-index: 20;
+  min-height: 280px;
+  padding: 32px 24px;
+  background: var(--backgroundPrimary);
+  color: var(--contentSecondary);
+  font:
+    400 14px/20px GrowwSans,
+    sans-serif;
+}
+.canvas-generation-skeleton {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+.canvas-generation-skeleton i {
+  display: block;
+  height: 18px;
+  border-radius: 8px;
+  background: var(--backgroundSecondary);
+}
+.canvas-generation-skeleton > i:first-child {
+  width: 40%;
+  height: 28px;
+}
+.canvas-generation-skeleton > i:nth-child(2) {
+  width: 65%;
+}
+.canvas-generation-skeleton > span {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-block: 8px;
+}
+.canvas-generation-skeleton > span i {
+  height: 112px;
+}
+.canvas-generation-progress {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--borderPrimary);
+  background: var(--backgroundPrimary);
+  color: var(--contentSecondary);
+  font:
+    400 12px/18px GrowwSans,
+    sans-serif;
+}
+.emulator {
+  position: relative;
+}
+
+.canvas-generation-progress {
+  display: block;
+}

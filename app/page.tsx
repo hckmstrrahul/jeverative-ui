@@ -1,76 +1,839 @@
 'use client';
-import {useCallback,useEffect,useRef,useState,type CSSProperties} from 'react';
-import {ArrowUp,Box,Check,ChevronRight,Code2,Command,Eye,KeyRound,Loader2,Monitor,RotateCcw,Search,Settings2,Smartphone,Sparkles,Tablet,X,Zap} from 'lucide-react';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Textarea} from '@/components/ui/textarea';
-import {Badge} from '@/components/ui/badge';
-import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
-import {Switch} from '@/components/ui/switch';
-import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
-import {Label} from '@/components/ui/label';
-import {SidebarProvider,Sidebar,SidebarHeader,SidebarContent,SidebarGroup,SidebarGroupLabel,SidebarMenu,SidebarMenuItem,SidebarMenuButton,SidebarFooter,SidebarTrigger} from '@/components/ui/sidebar';
-import {TooltipProvider,Tooltip,TooltipTrigger,TooltipContent} from '@/components/ui/tooltip';
-import {Toaster} from '@/components/ui/toast';
-import {ComponentPreview} from '@/components/component-preview';
-import {catalog,groups,initialScreen,scenarios,type Screen} from '@/lib/catalog';
-import {demoCompose,MODEL,validateScreen,type Answers} from '@/lib/decisions';
-type Result={screen:Screen;answers?:Answers;latency?:number;model?:string};
-const devices=[{id:'desktop',Icon:Monitor},{id:'tablet',Icon:Tablet},{id:'mobile',Icon:Smartphone}];
-export default function Home(){
- const [query,setQuery]=useState('');const [prompt,setPrompt]=useState('');const [device,setDevice]=useState('desktop');const [view,setView]=useState('preview');
- const [resetVersion,setResetVersion]=useState(0);const [screen,setScreen]=useState<Screen>(initialScreen);const [seen,setSeen]=useState<string[]>(initialScreen.components);const [inspecting,setInspecting]=useState<string|null>(null);const [settings,setSettings]=useState(false);
- const [key,setKey]=useState('');const [keyDraft,setKeyDraft]=useState('');const [serverKey,setServerKey]=useState(false);const [busy,setBusy]=useState(false);const [auto,setAuto]=useState(false);const [error,setError]=useState('');
- const [result,setResult]=useState<Result|null>(null);const [source,setSource]=useState<'demo'|'live'|'manual'>('demo');const [lastPrompt,setLastPrompt]=useState('');
- const autoTimer=useRef<ReturnType<typeof setTimeout>|null>(null);const controller=useRef<AbortController|null>(null);const sequence=useRef(0);const current=useRef(screen);const live=Boolean(key||serverKey);
- useEffect(()=>{fetch('/api/connection').then(r=>r.json()).then(d=>setServerKey(Boolean(d && typeof d === 'object' && 'configured' in d && d.configured===true))).catch(()=>{});return ()=>controller.current?.abort()},[]);
- const apply=useCallback((next:Screen)=>{current.current=next;setScreen(next);setSeen(old=>[...new Set([...old,...next.components])]);},[]);
- const cancel=useCallback(()=>{sequence.current++;if(autoTimer.current)clearTimeout(autoTimer.current);controller.current?.abort();setBusy(false);},[]);
- const compose=useCallback(async(text:string)=>{
-  const value=text.trim();if(!value||value.length>2000)return;
-  if(autoTimer.current)clearTimeout(autoTimer.current);controller.current?.abort();const requestId=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setBusy(true);
-  try{
-   let next:Result;
-   if(!live)next={screen:demoCompose(value,current.current)};
-   else{const response=await fetch('/api/compose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:value,current:current.current,...(key?{apiKey:key}:{})}),signal:abort.signal});const data=await response.json() as Result & {error?:string};if(!response.ok)throw new Error(data.error||'Could not compose this screen.');next={...data,screen:validateScreen(data.screen)};}
-   if(requestId!==sequence.current)return;
-   apply(next.screen);setResult(next);setSource(live?'live':'demo');setLastPrompt(value);setInspecting(null);setView('preview');return next.screen;
-  }catch(e){if(requestId===sequence.current&&!(e instanceof Error&&e.name==='AbortError'))setError(e instanceof Error?e.message:'Could not reach Jev. Try again.');}
-  finally{if(requestId===sequence.current)setBusy(false);}
- },[live,key,apply]);
- useEffect(()=>{if(!auto||!prompt.trim())return;const timer=setTimeout(()=>{void compose(prompt)},750);autoTimer.current=timer;return ()=>clearTimeout(timer)},[prompt,auto,compose]);
- useEffect(()=>{
-  const context=(document as Document&{modelContext?:{registerTool:(tool:unknown,options:{signal:AbortSignal})=>void|Promise<void>}}).modelContext;if(!context?.registerTool)return;
-  const lifecycle=new AbortController();
-  const tools=[{name:'compose_interface',description:'Compose the visible playground from a prompt. Uses OpenRouter credits when connected; otherwise uses the labeled local demo.',inputSchema:{type:'object',properties:{prompt:{type:'string',minLength:1,maxLength:2000}},required:['prompt'],additionalProperties:false},annotations:{readOnlyHint:false},execute:async(input:unknown)=>{if(!input||typeof input!=='object'||!('prompt' in input)||typeof input.prompt!=='string'||!input.prompt.trim()||input.prompt.length>2000)throw new Error('A prompt of 1–2000 characters is required.');setAuto(false);setPrompt(input.prompt);const next=await compose(input.prompt);if(!next)throw new Error('Composition failed.');return next;}},{name:'get_interface',description:'Read the current screen composition and available components.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>({screen:current.current,catalog})}];
-  for(const tool of tools){try{void Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{})}catch{}}
-  return ()=>lifecycle.abort();
- },[compose]);
- const active=screen.components;
- const chooseComponent=(id:string)=>{cancel();setInspecting(id);setView('preview');setSeen(old=>old.includes(id)?old:[...old,id]);};
- const toggleComponent=(id:string)=>{cancel();const next={...current.current,components:active.includes(id)?active.filter(x=>x!==id):[...active,id]};apply(next);setSource('manual');setResult(null);setInspecting(null);};
- const reset=()=>{cancel();setResetVersion(v=>v+1);setAuto(false);apply(initialScreen);setSeen(initialScreen.components);setInspecting(null);setResult(null);setError('');setPrompt('');setSource('demo');setLastPrompt('');};
- const info=scenarios[screen.scenario];const filtered=catalog.filter(c=>c.name.toLowerCase().includes(query.toLowerCase()));
- return <TooltipProvider><Toaster><SidebarProvider style={{'--sidebar-width':'244px'} as CSSProperties}>
- <Sidebar><SidebarHeader className="brand"><div className="brand-mark"><Command size={17}/></div><strong>jeverative</strong><Badge variant="outline">lab</Badge></SidebarHeader><div className="catalog-search"><Search size={14}/><Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Find a component…" aria-label="Search components"/></div><SidebarContent><div className="catalog-caption">Components <span>{catalog.length}</span></div>{Object.entries(groups).map(([group])=>{const items=filtered.filter(c=>c.group===group);return items.length>0&&<SidebarGroup key={group}><SidebarGroupLabel>{group}</SidebarGroupLabel><SidebarMenu>{items.map(c=><SidebarMenuItem key={c.id}><SidebarMenuButton isActive={inspecting===c.id} onClick={()=>chooseComponent(c.id)}><Box/><span>{c.name}</span>{active.includes(c.id)&&<span className="component-dot" aria-label="On canvas"/>}</SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarGroup>})}{!filtered.length&&<p className="px-5 py-8 text-sm text-muted-foreground">No matching components.</p>}</SidebarContent><SidebarFooter className="catalog-footer"><span className="status-dot"/>shadcn/ui <span className="ml-auto text-muted-foreground">Full library</span></SidebarFooter></Sidebar>
- <main className="workspace"><header className="workspace-header"><div className="flex items-center gap-2"><SidebarTrigger/><span className="text-muted-foreground">Workspace</span><ChevronRight size={14}/><span>Playground</span></div><Button variant="outline" onClick={()=>setSettings(true)}>{live?<KeyRound/>:<Settings2/>}{live?'OpenRouter connected':'Connect OpenRouter'}</Button></header>
- <section className="studio"><div className="studio-heading"><div><div className="eyebrow">THE GENERATIVE UI PLAYGROUND</div><h1>A prompt. A new perspective.</h1><p>Tell Jev what you need. Watch your UI take shape.</p></div><Badge variant="outline"><span className={'status-dot '+(source==='live'?'':'amber')}/>{busy?'Composing':source==='live'?'Jev live':source==='manual'?'Manual':'Demo'}</Badge></div>
- <div className="preview-toolbar"><Tabs value={view} onValueChange={v=>setView(String(v))}><TabsList variant="line"><TabsTrigger value="preview"><Monitor/>Preview</TabsTrigger><TabsTrigger value="decisions"><Code2/>Decisions</TabsTrigger></TabsList></Tabs><Tabs value={device} onValueChange={v=>setDevice(String(v))}><TabsList>{devices.map(({id,Icon})=><TabsTrigger key={id} value={id} aria-label={id}><Icon size={15}/></TabsTrigger>)}</TabsList></Tabs><Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Reset playground" onClick={reset}/>}><RotateCcw size={14}/></TooltipTrigger><TooltipContent>Reset playground</TooltipContent></Tooltip></div>
- <div className="canvas" aria-busy={busy}>
- {view==='decisions'?<div className="decision-panel"><div className="flex justify-between items-center"><div><div className="eyebrow">COMPOSITION</div><h2>{source==='live'?'Jev decisions':source==='manual'?'Manual composition':'Demo composition'}</h2></div>{result?.latency!==undefined&&<Badge variant="outline">{result.latency} ms</Badge>}</div><p className="decision-note">{source==='live'?'One request. Typed choices.':source==='manual'?'Adjusted from the component library.':'Local presets. Connect OpenRouter for Jev decisions.'}</p>{lastPrompt&&<blockquote>{lastPrompt}</blockquote>}<div className="decision-stats">{[['Layout',screen.layout],['Density',screen.density],['Theme',screen.theme],['Components',String(active.length)]].map(([label,value])=><div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div><div className="decision-list">{active.map((id,i)=><div key={id}><span className="font-mono text-xs text-muted-foreground">{String(i+1).padStart(2,'0')}</span><Box size={14}/><span>{catalog.find(c=>c.id===id)?.name}</span><span className="ml-auto text-muted-foreground text-xs">{result?.answers?.['component_'+id]?.choice??'selected'}</span>{result?.answers?.['component_'+id]?.confidence!==undefined&&<span className="text-xs">{Math.round(result.answers['component_'+id].confidence!*100)}%</span>}</div>)}</div><details><summary>Screen schema</summary><pre>{JSON.stringify(screen,null,2)}</pre></details></div>:
- <div className={'emulator '+device+' '+(screen.theme==='dark'?'dark':'')}><div className="browser-bar"><div className="traffic-lights"><i/><i/><i/></div><span>{inspecting?'components / '+inspecting:'preview.jeverative.app'}</span><Box size={13}/></div><div className={'screen '+screen.density}>
- {inspecting?<div className="inspect-heading"><div><div className="eyebrow">COMPONENT PREVIEW</div><h2>{catalog.find(c=>c.id===inspecting)?.name}</h2></div><div className="flex gap-2"><Button size="sm" variant="outline" onClick={()=>toggleComponent(inspecting)}>{active.includes(inspecting)?'Remove':'Add to canvas'}</Button><Button variant="ghost" size="icon-sm" aria-label="Close component preview" onClick={()=>setInspecting(null)}><X/></Button></div></div>:<div className="screen-heading"><div><div className="eyebrow">WORKSPACE / {screen.scenario.toUpperCase()}</div><h2>{info.title}</h2><p>{info.subtitle}</p></div><Badge variant="outline">Sample data</Badge></div>}
- <div className={'component-grid '+(inspecting?'inspecting':screen.layout)}>
- {seen.map(id=>{const visible=inspecting?id===inspecting:active.includes(id);return <section key={`${id}-${resetVersion}`} hidden={!visible} data-component={id} className={'component-block '+(id==='card'?'metrics-block':'')+' '+(id===screen.emphasis?'emphasized':'')} style={{order:active.indexOf(id)}}>{id!=='card'&&<div className="block-inner"><ComponentPreview id={id} scenario={screen.scenario}/></div>}{id==='card'&&<ComponentPreview id={id} scenario={screen.scenario}/>}</section>})}
- {!inspecting&&!active.length&&<div className="canvas-empty"><Box size={25}/><h3>A little room for possibility.</h3><p>Add a component or try a new prompt.</p></div>}
- </div></div><div className="emulator-footer"><span>{inspecting?'Interactive component':`${active.length} components · ${screen.layout}`}</span><span>shadcn/ui</span></div></div>}
- </div>
- <div className="canvas-status" aria-live="polite"><span>{busy?<><Loader2 className="animate-spin" size={12}/>Choosing your next interface…</>:inspecting?<><Eye size={12}/>Try it, then add it to your canvas.</>:lastPrompt?<><Check size={12}/>{source==='live'?'Composed by Jev':source==='demo'?'Demo updated':'Canvas updated'}{result?.latency!==undefined?` · ${result.latency} ms`:''}</>:<><Box size={12}/>Browse the library or start with a prompt.</>}</span><label htmlFor="auto-compose" className="auto-label">Auto-compose<Switch id="auto-compose" checked={auto} onCheckedChange={setAuto} aria-label="Auto-compose after typing"/></label></div>
- {error&&<div role="alert" className="error-banner">{error}<Button variant="ghost" size="icon-xs" aria-label="Dismiss error" onClick={()=>setError('')}><X/></Button></div>}
- <form className="composer" onSubmit={e=>{e.preventDefault();void compose(prompt)}}><Textarea value={prompt} maxLength={2000} onChange={e=>{cancel();setPrompt(e.target.value)}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void compose(prompt)}}} placeholder="Describe the interface you have in mind…" aria-label="Describe your interface"/><div className="composer-bottom"><span><Zap size={14}/>{live?'Jev · OpenRouter':'Demo · Connect for Jev'}</span><div className="flex items-center gap-3"><span className="composer-hint">↵ to compose</span>{busy?<Button type="button" variant="outline" onClick={cancel}>Cancel</Button>:<Button type="submit" disabled={!prompt.trim()}><ArrowUp/>Compose</Button>}</div></div></form>
- <div className="prompt-suggestions">{['A sales dashboard','Plan my week','A simple settings page'].map(p=><Button key={p} variant="ghost" size="sm" onClick={()=>{setPrompt(p);if(!auto)void compose(p)}}><Sparkles size={13}/>{p}</Button>)}</div></section>
- <footer className="workspace-footer"><span>Built from shadcn. Composed by Jev.</span><span>{catalog.length} components available</span></footer></main>
- <Dialog open={settings} onOpenChange={setSettings}><DialogContent className="sm:max-w-md p-6"><div className="connection-icon"><KeyRound size={20}/></div><DialogTitle>Connect OpenRouter</DialogTitle><DialogDescription>Use Jev to compose your interface.</DialogDescription><div className="space-y-2 my-2"><Label htmlFor="openrouter-key">API key</Label><Input id="openrouter-key" type="password" value={keyDraft} onChange={e=>setKeyDraft(e.target.value)} placeholder={key?'Key connected for this session':'sk-or-v1-…'} autoComplete="off"/><p className="text-xs text-muted-foreground leading-relaxed">Kept in memory for this session. Sent through our server to OpenRouter. Never written to browser storage.</p></div><div className="connection-model"><span>Model</span><code>{MODEL}</code></div>{auto&&<p className="text-xs text-muted-foreground">Auto-compose uses credits after you pause typing.</p>}<div className="flex justify-between gap-3 pt-3">{key?<Button variant="outline" onClick={()=>{cancel();setKey('');setKeyDraft('');setAuto(false);setSettings(false)}}>Disconnect</Button>:<Button variant="ghost" onClick={()=>setSettings(false)}>Keep exploring</Button>}<Button disabled={!keyDraft.trim()} onClick={()=>{cancel();setKey(keyDraft.trim());setKeyDraft('');setAuto(false);setSettings(false);setError('')}}>Connect<ArrowUpRightIcon/></Button></div>{serverKey&&<p className="text-xs text-muted-foreground">A server key is also configured.</p>}</DialogContent></Dialog>
- </SidebarProvider></Toaster></TooltipProvider>
+import { GenerationActivity } from '@/components/generation-activity';
+import { StreamPreview } from '@/lib/tree/preview';
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '@/components/ui/native-select';
+import { readLines } from '@/lib/tree/stream';
+import { validateDocument } from '@/lib/tree/spec';
+import { documentScreen } from '@/lib/tree/screen';
+import { DEFAULT_TEXT_MODEL, TEXT_MODELS } from '@/lib/tree/models';
+import type { TextUsage } from '@/lib/tree/usage';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ArrowUp,
+  ChevronRight,
+  Command,
+  KeyRound,
+  Monitor,
+  RotateCcw,
+  Settings2,
+  Smartphone,
+  Sparkles,
+  Tablet,
+  X,
+  Zap,
+} from '@/components/icons';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toast';
+import { CompositionCanvas } from '@/components/composition-canvas';
+import { composeLayout } from '@/lib/composition';
+import {
+  placementOrder,
+  placementInterval,
+  waitForPlacement,
+} from '@/lib/placement';
+import { catalog, initialScreen, type Screen } from '@/lib/catalog';
+import { MODEL, validateScreen, type Answers } from '@/lib/decisions';
+type Result = {
+  screen: Screen;
+  answers?: Answers;
+  adjustments?: string[];
+  latency?: number;
+  engine?: 'hybrid' | 'llm';
+  plan?: { arrangement: string; density: string; surface: string };
+  metrics?: {
+    firstContentMs: number | null;
+    textMs: number;
+    planMs: number;
+    repairs: number;
+    totalMs: number;
+    textUsage?: TextUsage;
+  };
+  model?: string;
+};
+const examplePrompts = [
+  {
+    label: 'Profile & wallets',
+    prompt:
+      'Design a compact mobile investing profile. Show avatar, name, separate INR and USD wallet balances, add-money actions, linked bank accounts, verification status and settings. Use Mint light theme.',
+  },
+  {
+    label: 'Sales dashboard',
+    prompt:
+      'Create a desktop sales dashboard with a left sidebar, date filter, three key metrics, revenue chart and recent orders table with search, status filters and pagination. Keep the layout compact and aligned.',
+  },
+  {
+    label: 'Task board',
+    prompt:
+      'Build a tablet project planner with To do, In progress and Done columns. Include task priorities, assignees, due dates, search and an add-task dialog. Let me move tasks between columns.',
+  },
+  {
+    label: 'Account settings',
+    prompt:
+      'Create mobile account settings grouped into security, notifications and preferences. Include biometric login, notification switches, language selection and a clearly separated sign-out action. Avoid unnecessary cards.',
+  },
+  {
+    label: 'Support inbox',
+    prompt:
+      'Design a desktop support inbox with three panes: navigation, conversation list and active conversation. Include unread badges, search, message composer and customer details in a collapsible panel.',
+  },
+  {
+    label: 'Investment portfolio',
+    prompt:
+      'Create a dark desktop investment portfolio with total value, returns, a performance chart, holdings table and watchlist. Distinguish Indian and US stocks and preserve their currencies. Use restrained colour and compact spacing.',
+  },
+  {
+    label: 'Mobile checkout',
+    prompt:
+      'Build a mobile checkout with order summary, quantity controls, delivery address, coupon input, payment selection and a sticky pay button showing the total. Keep the primary action visible.',
+  },
+  {
+    label: 'Meeting scheduler',
+    prompt:
+      'Create a minimal desktop meeting scheduler with a calendar, available time slots, timezone selector and booking confirmation. Use generous whitespace without adding unrelated dashboard metrics.',
+  },
+];
+const devices = [
+  { id: 'desktop', Icon: Monitor },
+  { id: 'tablet', Icon: Tablet },
+  { id: 'mobile', Icon: Smartphone },
+];
+export default function Home() {
+  const [prompt, setPrompt] = useState('');
+  const [resetVersion, setResetVersion] = useState(0);
+  const [screen, setScreen] = useState<Screen>(initialScreen);
+  const [draft, setDraft] = useState<Screen | null>(null);
+  const [streamStatus, setStreamStatus] = useState('');
+  const [livePlan, setLivePlan] = useState<Result['plan']>();
+  const [liveCount, setLiveCount] = useState(0);
+  const [engine, setEngine] = useState<'hybrid' | 'llm' | 'jev'>('hybrid');
+  const [autoRepair, setAutoRepair] = useState(true);
+  const [hasLivePreview, setHasLivePreview] = useState(false);
+  const [textModel, setTextModel] = useState<string>(DEFAULT_TEXT_MODEL);
+  const device = draft?.device ?? screen.device;
+  const [seen, setSeen] = useState<string[]>(initialScreen.components);
+  const [inspecting, setInspecting] = useState<string | null>(null);
+  const [settings, setSettings] = useState(false);
+  const [key, setKey] = useState('');
+  const [keyDraft, setKeyDraft] = useState('');
+  const [serverKey, setServerKey] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [placed, setPlaced] = useState<string[] | null>(null);
+  const [placement, setPlacement] = useState<{
+    label: string;
+    done: number;
+    total: number;
+  } | null>(null);
+  const [lastPrompt, setLastPrompt] = useState('');
+  const lastPromptRef = useRef('');
+  const recentArrangements = useRef<string[]>([]);
+  const controller = useRef<AbortController | null>(null);
+  const sequence = useRef(0);
+  const current = useRef(screen);
+  const live = Boolean(key || serverKey);
+  useEffect(() => {
+    fetch('/api/connection')
+      .then((r) => r.json())
+      .then((d) =>
+        setServerKey(
+          Boolean(
+            d &&
+            typeof d === 'object' &&
+            'configured' in d &&
+            d.configured === true,
+          ),
+        ),
+      )
+      .catch(() => {});
+    return () => controller.current?.abort();
+  }, []);
+  const apply = useCallback((next: Screen) => {
+    current.current = next;
+    setScreen(next);
+    setSeen((old) => [...new Set([...old, ...next.components])]);
+  }, []);
+  const cancel = useCallback(() => {
+    sequence.current++;
+    setDraft(null);
+    setStreamStatus('');
+    controller.current?.abort();
+    setBusy(false);
+    setPlaced(null);
+    setPlacement(null);
+  }, []);
+  const compose = useCallback(
+    async (text: string) => {
+      const value = text.trim();
+      if (!value || value.length > 2000) return;
+      if (!live) {
+        setSettings(true);
+        return;
+      }
+      controller.current?.abort();
+      const requestId = ++sequence.current;
+      const abort = new AbortController();
+      controller.current = abort;
+      setError('');
+      // Keep the visible draft when a new request supersedes an in-flight request.
+      setStreamStatus('');
+      setHasLivePreview(false);
+      setLivePlan(undefined);
+      setLiveCount(0);
+      setBusy(true);
+      setPlaced(null);
+      setPlacement(null);
+      try {
+        let next: Result;
+        if (engine !== 'jev') {
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: abort.signal,
+            body: JSON.stringify({
+              prompt: value,
+              apiKey: key || undefined,
+              model: textModel,
+              engine,
+              autoRepair,
+              recentArrangements: recentArrangements.current,
+              device: current.current.device,
+              previous: current.current.document,
+              mode: value === lastPromptRef.current ? 'variation' : 'edit',
+            }),
+          });
+          if (!response.ok || !response.body) {
+            const problem = (await response.json()) as { error?: string };
+            throw new Error(problem.error ?? 'Could not start generation.');
+          }
+          let completed: Result | null = null;
+          const preview = new StreamPreview();
+          setInspecting(null);
+          for await (const line of readLines(response.body, 32_000_000)) {
+            if (requestId !== sequence.current) return;
+            if (!line.trim()) continue;
+            const event = JSON.parse(line);
+            if (event.type === 'error') throw new Error(event.message);
+            if (event.type === 'status') {
+              setStreamStatus(event.message);
+            }
+            if (event.type === 'plan') setLivePlan(event.plan);
+            if (event.type === 'preview') {
+              const document = validateDocument(event.document, false);
+              setLiveCount(document.nodes.length);
+              const visible = preview.push(document);
+              if (visible) {
+                setDraft(documentScreen(visible, current.current));
+                setHasLivePreview(true);
+              }
+              setStreamStatus((status) =>
+                /correct|repair|fix/i.test(status)
+                  ? status
+                  : `Building ${document.nodes.length} elements`,
+              );
+            }
+            if (event.type === 'complete')
+              completed = {
+                screen: documentScreen(
+                  validateDocument(event.document),
+                  current.current,
+                ),
+                latency: event.latency,
+                engine: event.engine,
+                plan: event.plan,
+                metrics: event.metrics,
+                model: event.model,
+                adjustments: event.adjustments,
+              };
+          }
+          if (!completed)
+            throw new Error(
+              'Generation was interrupted. Your previous screen is preserved.',
+            );
+          next = completed;
+          setStreamStatus('');
+        } else {
+          const response = await fetch('/api/compose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: value,
+              current: { ...current.current, document: undefined },
+              ...(key ? { apiKey: key } : {}),
+            }),
+            signal: abort.signal,
+          });
+          const data = (await response.json()) as Result & { error?: string };
+          if (!response.ok)
+            throw new Error(data.error || 'Could not compose this screen.');
+          next = { ...data, screen: validateScreen(data.screen) };
+        }
+        if (requestId !== sequence.current) return;
+        // Commit the finished screen before removing the streaming overlay.
+        apply(next.screen);
+        setDraft(null);
+
+        if (next.plan)
+          recentArrangements.current = [
+            ...recentArrangements.current,
+            next.plan.arrangement,
+          ].slice(-4);
+
+        setLastPrompt(value);
+        lastPromptRef.current = value;
+        setInspecting(null);
+        const order = placementOrder(composeLayout(next.screen));
+        if (
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+          order.length &&
+          !next.screen.document
+        ) {
+          setPlaced([]);
+          setPlacement({ label: 'Layout ready', done: 0, total: order.length });
+          await waitForPlacement(abort.signal, 100);
+          for (let index = 0; index < order.length; index++) {
+            if (requestId !== sequence.current) return;
+            setPlaced(order.slice(0, index + 1));
+            setPlacement({
+              label:
+                catalog.find((c) => c.id === order[index])?.name ?? 'Component',
+              done: index + 1,
+              total: order.length,
+            });
+            await waitForPlacement(
+              abort.signal,
+              placementInterval(order.length),
+            );
+          }
+        }
+        if (requestId !== sequence.current) return;
+        setPlaced(null);
+        setPlacement(null);
+        return next.screen;
+      } catch (e) {
+        if (
+          requestId === sequence.current &&
+          !(e instanceof Error && e.name === 'AbortError')
+        )
+          setError(
+            e instanceof Error ? e.message : 'Could not reach Jev. Try again.',
+          );
+      } finally {
+        if (requestId === sequence.current) {
+          setBusy(false);
+          // Keep an unfinished draft visible; only completed documents are committed.
+          setStreamStatus('');
+          setPlaced(null);
+          setPlacement(null);
+        }
+      }
+    },
+    [live, key, apply, engine, textModel, autoRepair],
+  );
+  useEffect(() => {
+    const context = (
+      document as Document & {
+        modelContext?: {
+          registerTool: (
+            tool: unknown,
+            options: { signal: AbortSignal },
+          ) => void | Promise<void>;
+        };
+      }
+    ).modelContext;
+    if (!context?.registerTool) return;
+    const lifecycle = new AbortController();
+    const tools = [
+      {
+        name: 'compose_interface',
+        description:
+          'Compose the visible playground from a prompt. Uses OpenRouter credits when connected; otherwise uses the labeled local demo.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            prompt: { type: 'string', minLength: 1, maxLength: 2000 },
+          },
+          required: ['prompt'],
+          additionalProperties: false,
+        },
+        annotations: { readOnlyHint: false },
+        execute: async (input: unknown) => {
+          if (
+            !input ||
+            typeof input !== 'object' ||
+            !('prompt' in input) ||
+            typeof input.prompt !== 'string' ||
+            !input.prompt.trim() ||
+            input.prompt.length > 2000
+          )
+            throw new Error('A prompt of 1–2000 characters is required.');
+
+          setPrompt(input.prompt);
+          const next = await compose(input.prompt);
+          if (!next) throw new Error('Composition failed.');
+          return next;
+        },
+      },
+      {
+        name: 'get_interface',
+        description:
+          'Read the current screen composition and available components.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+          additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true },
+        execute: () => ({ screen: current.current, catalog }),
+      },
+    ];
+    for (const tool of tools) {
+      try {
+        void Promise.resolve(
+          context.registerTool(tool, { signal: lifecycle.signal }),
+        ).catch(() => {});
+      } catch {}
+    }
+    return () => lifecycle.abort();
+  }, [compose]);
+  const active = screen.components;
+  const toggleComponent = (id: string) => {
+    cancel();
+    const next = {
+      ...current.current,
+      components: active.includes(id)
+        ? active.filter((x) => x !== id)
+        : [...active, id],
+    };
+    apply(next);
+
+    setInspecting(null);
+  };
+  const reset = () => {
+    cancel();
+    setResetVersion((v) => v + 1);
+
+    apply(initialScreen);
+    setSeen(initialScreen.components);
+    setInspecting(null);
+
+    setLivePlan(undefined);
+    setLiveCount(0);
+    setError('');
+    setPrompt('');
+
+    setLastPrompt('');
+    lastPromptRef.current = '';
+  };
+  return (
+    <TooltipProvider>
+      <Toaster>
+        <main className="workspace">
+          <header className="workspace-header">
+            <div className="studio-brand">
+              <span className="brand-mark">
+                <Command size={17} />
+              </span>
+              <strong>jeverative</strong>
+            </div>
+            <Button variant="outline" onClick={() => setSettings(true)}>
+              {live ? <KeyRound /> : <Settings2 />}
+              {live ? 'OpenRouter connected' : 'Connect OpenRouter'}
+            </Button>
+          </header>
+          <section className="studio">
+            <div className="studio-heading">
+              <div>
+                <h1>What will you make?</h1>
+                <p>Describe it. Shape it. Make it yours.</p>
+              </div>
+              <GenerationActivity
+                busy={busy}
+                live={live}
+                engine={engine}
+                status={streamStatus}
+                plan={livePlan}
+                count={busy ? liveCount : (screen.document?.nodes.length ?? 0)}
+                error={Boolean(error)}
+                completed={Boolean(lastPrompt)}
+              />
+            </div>
+            {error && (
+              <div role="alert" className="error-banner">
+                {error}
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Dismiss error"
+                  onClick={() => setError('')}
+                >
+                  <X />
+                </Button>
+              </div>
+            )}
+            <form
+              className="composer"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void compose(prompt);
+              }}
+            >
+              <Textarea
+                value={prompt}
+                maxLength={2000}
+                onChange={(e) => {
+                  cancel();
+                  setPrompt(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (
+                    e.key === 'Enter' &&
+                    !e.shiftKey &&
+                    !e.nativeEvent.isComposing
+                  ) {
+                    e.preventDefault();
+                    void compose(prompt);
+                  }
+                }}
+                placeholder="Describe the interface you have in mind…"
+                aria-label="Describe your interface"
+              />
+              <div className="composer-bottom">
+                <span>
+                  <Zap size={14} />
+                  {live
+                    ? engine === 'llm'
+                      ? 'LLM · OpenRouter'
+                      : 'Jev · OpenRouter'
+                    : 'Connect OpenRouter to start'}
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="composer-hint">↵ to compose</span>
+                  {busy ? (
+                    <Button type="button" variant="outline" onClick={cancel}>
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={!prompt.trim()}>
+                      <ArrowUp />
+                      {Boolean(lastPrompt) && lastPrompt === prompt.trim()
+                        ? 'New variation'
+                        : 'Compose'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </form>
+            <div className="prompt-suggestions">
+              {examplePrompts.map(({ label, prompt: example }) => (
+                <Button
+                  key={label}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    cancel();
+
+                    setPrompt(example);
+                  }}
+                >
+                  <Sparkles size={13} />
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <div className="preview-toolbar">
+              <span className="preview-label">
+                <Monitor size={14} />
+                Preview
+              </span>
+              <Tabs
+                value={device}
+                onValueChange={(v) => {
+                  cancel();
+                  apply({
+                    ...current.current,
+                    device: String(v) as Screen['device'],
+                  });
+                }}
+              >
+                <TabsList>
+                  {devices.map(({ id, Icon }) => (
+                    <TabsTrigger key={id} value={id} aria-label={id}>
+                      <Icon size={15} />
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Reset playground"
+                      onClick={reset}
+                    />
+                  }
+                >
+                  <RotateCcw size={14} />
+                </TooltipTrigger>
+                <TooltipContent>Reset playground</TooltipContent>
+              </Tooltip>
+            </div>
+            <div
+              className="canvas"
+              aria-busy={busy}
+              data-placing={placement !== null || undefined}
+            >
+              {!live || (!lastPrompt && !draft && !busy) ? (
+                <div className="studio-empty">
+                  <div className="studio-empty-mark">
+                    <Sparkles size={24} />
+                  </div>
+                  <h2>
+                    {live
+                      ? 'Your next interface starts here'
+                      : 'A blank canvas. Your next idea.'}
+                  </h2>
+                  <p>
+                    {live
+                      ? 'Choose an example or write a prompt, then press Compose.'
+                      : 'Connect OpenRouter to turn your prompt into an interface.'}
+                  </p>
+                  {!live && (
+                    <Button variant="outline" onClick={() => setSettings(true)}>
+                      <KeyRound size={15} />
+                      Connect OpenRouter
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <CompositionCanvas
+                  hidden={false}
+                  screen={draft ?? screen}
+                  composing={busy || Boolean(draft)}
+                  generationStatus={
+                    busy && live && engine !== 'jev'
+                      ? streamStatus || 'Planning your interface'
+                      : undefined
+                  }
+                  awaitingContent={
+                    busy && live && engine !== 'jev' && !hasLivePreview
+                  }
+                  unfinished={Boolean(draft) && !busy}
+                  onRestore={() => {
+                    cancel();
+                    setError('');
+                  }}
+                  seen={seen}
+                  resetVersion={resetVersion}
+                  device={device}
+                  onNavigate={(next) => {
+                    cancel();
+                    apply(next);
+                  }}
+                  inspecting={inspecting}
+                  placed={placed}
+                  onToggle={toggleComponent}
+                  onClose={() => setInspecting(null)}
+                />
+              )}
+            </div>
+          </section>
+        </main>
+        <Dialog open={settings} onOpenChange={setSettings}>
+          <DialogContent className="sm:max-w-md p-6">
+            <div className="connection-icon">
+              <KeyRound size={20} />
+            </div>
+            <DialogTitle>Connect OpenRouter</DialogTitle>
+            <DialogDescription>
+              Choose how your interface is composed.
+            </DialogDescription>
+            <div className="space-y-2 my-2">
+              <Label htmlFor="openrouter-key">API key</Label>
+              <Input
+                id="openrouter-key"
+                type="password"
+                value={keyDraft}
+                onChange={(e) => setKeyDraft(e.target.value)}
+                placeholder={
+                  key ? 'Key connected for this session' : 'sk-or-v1-…'
+                }
+                autoComplete="off"
+              />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Kept in memory for this session. Sent through our server to
+                OpenRouter. Never written to browser storage.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="composition-engine">Composition engine</Label>
+              <NativeSelect
+                id="composition-engine"
+                value={engine}
+                onChange={(e) => {
+                  cancel();
+
+                  setEngine(e.target.value as 'hybrid' | 'llm' | 'jev');
+                }}
+              >
+                <NativeSelectOption value="hybrid">
+                  Jev-directed · adaptive UI
+                </NativeSelectOption>
+                <NativeSelectOption value="llm">
+                  LLM only · local layout rules
+                </NativeSelectOption>
+                <NativeSelectOption value="jev">
+                  Jev · prepared recipes
+                </NativeSelectOption>
+              </NativeSelect>
+              {engine !== 'jev' && (
+                <>
+                  <div className="flex items-center justify-between gap-4">
+                    <Label htmlFor="auto-repair">Auto-fix invalid output</Label>
+                    <Switch
+                      id="auto-repair"
+                      checked={autoRepair}
+                      onCheckedChange={(value) => {
+                        cancel();
+
+                        setAutoRepair(value);
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    One text-model retry if validation fails. Off: faster, but
+                    the preview may be unfinished.
+                  </p>
+                  <Label htmlFor="model-preset">Text model</Label>
+                  <NativeSelect
+                    id="model-preset"
+                    value={
+                      TEXT_MODELS.some((m) => m.id === textModel)
+                        ? textModel
+                        : 'custom'
+                    }
+                    onChange={(e) => {
+                      cancel();
+
+                      setTextModel(
+                        e.target.value === 'custom' ? '' : e.target.value,
+                      );
+                    }}
+                  >
+                    {TEXT_MODELS.map((m) => (
+                      <NativeSelectOption key={m.id} value={m.id}>
+                        {m.name}
+                      </NativeSelectOption>
+                    ))}
+                    <NativeSelectOption value="custom">
+                      Custom OpenRouter model
+                    </NativeSelectOption>
+                  </NativeSelect>
+                  <p className="text-xs text-muted-foreground">
+                    {TEXT_MODELS.find((m) => m.id === textModel)?.note ??
+                      'Enter a model ID below. Custom model settings use provider defaults.'}
+                  </p>
+                  {TEXT_MODELS.find((m) => m.id === textModel) && (
+                    <p className="text-xs text-muted-foreground">
+                      Listed ${' '}
+                      {TEXT_MODELS.find((m) => m.id === textModel)!.input} input
+                      / $ {TEXT_MODELS.find((m) => m.id === textModel)!.output}{' '}
+                      output per 1M tokens · 21 Sep 2026. Provider/context tiers
+                      vary.
+                    </p>
+                  )}
+                  <Label htmlFor="text-model">OpenRouter model ID</Label>
+                  <Input
+                    id="text-model"
+                    value={textModel}
+                    onChange={(e) => {
+                      cancel();
+
+                      setTextModel(e.target.value);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {engine === 'llm'
+                      ? 'Generates content and structure with local validation. No Jev call.'
+                      : 'Jev chooses the layout; the text model fills it with content. Both use OpenRouter credits.'}
+                  </p>
+                </>
+              )}
+            </div>
+            {engine !== 'llm' && (
+              <div className="connection-model">
+                <span>Decision model</span>
+                <code>{MODEL}</code>
+              </div>
+            )}
+
+            <div className="flex justify-between gap-3 pt-3">
+              {key ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    cancel();
+                    setKey('');
+                    setKeyDraft('');
+
+                    setSettings(false);
+                  }}
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Button variant="ghost" onClick={() => setSettings(false)}>
+                  Keep exploring
+                </Button>
+              )}
+              <Button
+                disabled={!keyDraft.trim() && !key && !serverKey}
+                onClick={() => {
+                  cancel();
+                  if (keyDraft.trim()) setKey(keyDraft.trim());
+                  setKeyDraft('');
+
+                  setSettings(false);
+                  setError('');
+                }}
+              >
+                {key || serverKey ? 'Done' : 'Connect'}
+                <ArrowUpRightIcon />
+              </Button>
+            </div>
+            {serverKey && (
+              <p className="text-xs text-muted-foreground">
+                A server key is also configured.
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
+      </Toaster>
+    </TooltipProvider>
+  );
 }
-function ArrowUpRightIcon(){return <ChevronRight size={14}/>}
+function ArrowUpRightIcon() {
+  return <ChevronRight size={14} />;
+}

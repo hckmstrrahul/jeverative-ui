@@ -1,0 +1,387 @@
+import type { Field } from './spec';
+const definition = (
+  description: string,
+  fields: Record<string, Field>,
+  required: string[] = [],
+) => ({ description, fields, required });
+const text = { title: 'text', description: 'text' } as const;
+const choice = {
+  label: 'text',
+  bind: 'text',
+  options: 'options',
+  value: 'text',
+} as const;
+const input = {
+  label: 'text',
+  bind: 'text',
+  value: 'text',
+  placeholder: 'text',
+  required: 'boolean',
+} as const;
+export const extendedDefinitions = {
+  'financial-value': definition(
+    'Structured financial value. Indian grouping, two decimals. Return tone derives from sign; zero is secondary, unavailable is a dash. Only one anchor per panel; use list role in rows.',
+    {
+      label: 'text',
+      amount: 'number',
+      currency: ['INR', 'USD', 'none'],
+      format: ['amount', 'return', 'percent'],
+      role: ['list', 'anchor'],
+      unavailable: 'boolean',
+    },
+    ['label'],
+  ),
+  'mint-row': definition(
+    'Canonical list row; compact only for secondary dense lists. Optional icon or initials thumbnail, trailing value, chevron and child actions.',
+    {
+      title: 'text',
+      description: 'text',
+      leading: ['none', 'icon', 'thumbnail'],
+      initials: 'text',
+      icon: [
+        'Home',
+        'Chart',
+        'Settings',
+        'Bell',
+        'Folder',
+        'Star',
+        'Search',
+        'Mail',
+        'KeyRound',
+        'Plus',
+        'ArrowUpRight',
+        'Monitor',
+        'Smartphone',
+        'Grid',
+        'Check',
+        'Money',
+        'Percent',
+        'Eye',
+      ],
+      value: 'text',
+      density: ['default', 'compact'],
+      chevron: 'boolean',
+      divider: 'boolean',
+    },
+    ['title'],
+  ),
+  'mint-app-bar': definition(
+    'Standard screen chrome with back action and optional subtitle. Root variant reads title from a mint-bottom-nav binding using target; root actions are Search, QR, Profile. Do not add a duplicate page heading.',
+    {
+      title: 'text',
+      subtitle: 'text',
+      variant: ['standard', 'root'],
+      target: 'text',
+    },
+    ['title'],
+  ),
+  'mint-bottom-nav': definition(
+    'Root destinations only, 3–5 labels. Default Stocks, F&O, Mutual Funds, Loans unless exploring IA. Bind active selection; pair root app bar target with this bind and content when conditions.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  'mint-pill': definition(
+    'Independent removable filter; compose several for multi-selection. Boolean binding and optional count, hidden at zero. Never navigation.',
+    { label: 'text', bind: 'text', checked: 'boolean', count: 'number' },
+    ['label', 'bind'],
+  ),
+  'mint-pill-group': definition(
+    'Single choice: stylised timeframe or minimal dense form. No horizontal scrolling; short labels only. Never navigation.',
+    { ...choice, variant: ['stylised', 'minimal'] },
+    ['label', 'bind', 'options'],
+  ),
+  'mint-order-input': definition(
+    '120x40 order control. Price/quantity/trigger are direct inputs; lots only uses stepper with minimum 1. Market price disabled At market. Put helper/error in action dock.',
+    {
+      label: 'text',
+      bind: 'text',
+      value: 'number',
+      mode: ['price', 'quantity', 'trigger', 'lots', 'market'],
+    },
+    ['label', 'bind'],
+  ),
+  'mint-action-dock': definition(
+    'Transaction footer; one or two button children. Large 48px full-width actions; sell uses destructive. Helper/error strip appears above actions. Local preview only.',
+    { helper: 'text', error: 'text' },
+  ),
+  'aspect-ratio': definition(
+    'Proportional content frame; children supply actual content.',
+    { ratio: [1, 1.5, 1.7778] },
+  ),
+  collapsible: definition(
+    'Optional details. Label is the disclosure trigger; content is children.',
+    { label: 'text', open: 'boolean' },
+    ['label'],
+  ),
+  resizable: definition(
+    'Resizable workspace. Each direct child is one pane; 2–4 panes. Mobile stacks panes.',
+    { label: 'text', direction: ['horizontal', 'vertical'] },
+    ['label'],
+  ),
+  'scroll-area': definition(
+    'Bounded scroll region for long secondary content, not the whole page.',
+    { label: 'text', height: [160, 240, 320, 480] },
+    ['label'],
+  ),
+  sidebar: definition(
+    'Local section navigation. Bind selected option; sibling content uses when conditions. Mobile renders horizontal navigation.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  'button-group': definition(
+    'Related button children, not a standalone task.',
+    { label: 'text' },
+    ['label'],
+  ),
+  combobox: definition(
+    'Searchable single choice.',
+    { ...choice, required: 'boolean' },
+    ['label', 'bind', 'options'],
+  ),
+  'date-picker': definition(
+    'Date selector. Value is YYYY-MM-DD or omitted.',
+    { ...input },
+    ['label', 'bind'],
+  ),
+  field: definition(
+    'One labelled field; children must include exactly one input control; optional label/text siblings are allowed. Label associates with that child.',
+    { label: 'text', description: 'text' },
+    ['label'],
+  ),
+  'input-group': definition(
+    'A bound input with optional leading/trailing explanatory text.',
+    { ...input, prefix: 'text', suffix: 'text' },
+    ['label', 'bind'],
+  ),
+  'input-otp': definition(
+    'Bound numeric verification code; demo only, no authentication.',
+    { ...input, length: [4, 6] },
+    ['label', 'bind'],
+  ),
+  label: definition(
+    'Label for another input node. target is its node id.',
+    { text: 'text', target: 'text' },
+    ['text', 'target'],
+  ),
+  'native-select': definition(
+    'Native single-select control.',
+    { ...choice, required: 'boolean' },
+    ['label', 'bind', 'options'],
+  ),
+  slider: definition(
+    'Bound numeric range with visible label/value. min < max; step > 0.',
+    {
+      label: 'text',
+      bind: 'text',
+      min: 'number',
+      max: 'number',
+      step: 'number',
+      value: 'number',
+    },
+    ['label', 'bind'],
+  ),
+  toggle: definition(
+    'One pressed/unpressed preference.',
+    { label: 'text', bind: 'text', checked: 'boolean' },
+    ['label', 'bind'],
+  ),
+  'toggle-group': definition('Single-select segmented preference.', choice, [
+    'label',
+    'bind',
+    'options',
+  ]),
+  breadcrumb: definition(
+    'Local hierarchy navigation. Final option is current by default. Use binding/when for local views.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  command: definition(
+    'Searchable local commands. Selecting writes its option to bind; use when panels.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  'context-menu': definition(
+    'Contextual choices for the trigger label. Selection updates bind; use when panels. Desktop only secondary actions; offer equivalent visible actions for mobile.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  'dropdown-menu': definition(
+    'Menu choices that update a local binding.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  menubar: definition(
+    'One labelled menu of local options; compose multiple as needed.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  'navigation-menu': definition(
+    'Local sections; selection writes bind. Pair with when panels, no external routes.',
+    choice,
+    ['label', 'bind', 'options'],
+  ),
+  pagination: definition(
+    'Bound current page 1–pages. Use when equals numeric page on content panels.',
+    {
+      label: 'text',
+      bind: 'text',
+      pages: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      value: 'number',
+    },
+    ['label', 'bind', 'pages'],
+  ),
+  calendar: definition(
+    'Inline single-date calendar. Value YYYY-MM-DD or omitted.',
+    input,
+    ['label', 'bind'],
+  ),
+  carousel: definition(
+    'Manual carousel. Every direct child is a slide; no auto-play.',
+    { label: 'text' },
+    ['label'],
+  ),
+  'data-table': definition(
+    'Searchable sortable table. String rows aligned with columns. Full-width section.',
+    { title: 'text', columns: 'options', rows: 'rows' },
+    ['columns', 'rows'],
+  ),
+  item: definition(
+    'A semantic list item with actual title, description and optional child actions.',
+    text,
+    ['title'],
+  ),
+  kbd: definition(
+    'A displayed shortcut hint; does not register a shortcut.',
+    { text: 'text' },
+    ['text'],
+  ),
+  'alert-dialog': definition(
+    'Confirmation container opened by a toggle button targeting this node id. Confirmation is local feedback only.',
+    { ...text, confirm: 'text' },
+    ['title', 'description', 'confirm'],
+  ),
+  drawer: definition(
+    'Overlay container opened by a toggle button targeting this id. Defaults bottom; side may be left/right/top/bottom.',
+    { ...text, side: ['bottom', 'left', 'right', 'top'] },
+    ['title'],
+  ),
+  sheet: definition(
+    'Side overlay container opened by a toggle button targeting this id.',
+    { ...text, side: ['left', 'right', 'top', 'bottom'] },
+    ['title'],
+  ),
+  empty: definition('A meaningful empty state; optional child action.', text, [
+    'title',
+    'description',
+  ]),
+  'hover-card': definition(
+    'Supporting hover/focus detail; never put essential content only here.',
+    { label: 'text' },
+    ['label'],
+  ),
+  popover: definition(
+    'Click-triggered contextual child content.',
+    { label: 'text' },
+    ['label'],
+  ),
+  skeleton: definition(
+    'Explicit loading placeholder only when requested.',
+    { label: 'text', lines: [1, 2, 3, 4] },
+    ['label'],
+  ),
+  spinner: definition(
+    'Labelled ongoing activity indicator only when requested.',
+    { label: 'text' },
+    ['label'],
+  ),
+  toast: definition(
+    'Button-triggered local toast feedback; never automatic on render.',
+    { label: 'text', title: 'text', description: 'text' },
+    ['label', 'title'],
+  ),
+  tooltip: definition(
+    'Short supplemental hint for its labelled trigger.',
+    { label: 'text', text: 'text' },
+    ['label', 'text'],
+  ),
+  attachment: definition(
+    'File metadata preview. Does not imply upload/download functionality.',
+    { name: 'text', detail: 'text' },
+    ['name', 'detail'],
+  ),
+  bubble: definition(
+    'One authored chat bubble.',
+    { text: 'text', align: ['start', 'end'] },
+    ['text'],
+  ),
+  direction: definition(
+    'Text direction context for child content.',
+    { direction: ['ltr', 'rtl'] },
+    ['direction'],
+  ),
+  marker: definition('Conversation timeline marker.', { text: 'text' }, [
+    'text',
+  ]),
+  message: definition(
+    'One conversation message with author, body and optional time.',
+    { author: 'text', text: 'text', time: 'text', align: ['start', 'end'] },
+    ['author', 'text'],
+  ),
+  'message-scroller': definition(
+    'Scrollable conversation with message/bubble children.',
+    { label: 'text', height: [240, 320, 480] },
+    ['label'],
+  ),
+  questionnaire: definition(
+    'One bound single-choice question with local submit feedback. Never nest in forms.',
+    { ...choice, submit: 'text' },
+    ['label', 'bind', 'options'],
+  ),
+};
+export type ExtendedKind = keyof typeof extendedDefinitions;
+export const extendedKinds = Object.keys(extendedDefinitions) as ExtendedKind[];
+export const extendedContainers: ExtendedKind[] = [
+  'mint-row',
+  'mint-action-dock',
+  'aspect-ratio',
+  'collapsible',
+  'resizable',
+  'scroll-area',
+  'button-group',
+  'field',
+  'carousel',
+  'item',
+  'alert-dialog',
+  'drawer',
+  'sheet',
+  'empty',
+  'hover-card',
+  'popover',
+  'direction',
+  'message-scroller',
+];
+export const extendedBindings: ExtendedKind[] = [
+  'mint-bottom-nav',
+  'mint-pill',
+  'mint-pill-group',
+  'mint-order-input',
+  'sidebar',
+  'combobox',
+  'date-picker',
+  'input-group',
+  'input-otp',
+  'native-select',
+  'slider',
+  'toggle',
+  'toggle-group',
+  'breadcrumb',
+  'command',
+  'context-menu',
+  'dropdown-menu',
+  'menubar',
+  'navigation-menu',
+  'pagination',
+  'calendar',
+  'questionnaire',
+];
+export const overlayKinds = ['dialog', 'alert-dialog', 'drawer', 'sheet'];

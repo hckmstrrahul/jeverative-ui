@@ -12,7 +12,7 @@ import {
   TriangleAlertIcon,
   OctagonXIcon,
   Loader2Icon,
-} from 'lucide-react';
+} from '@/components/icons';
 
 const toast = ToastPrimitive.createToastManager();
 
