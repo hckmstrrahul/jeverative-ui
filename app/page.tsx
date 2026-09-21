@@ -464,8 +464,18 @@ export default function Home() {
           <section className="studio">
             <div className="studio-heading">
               <div>
-                <h1>What will you make?</h1>
-                <p>Describe it. Shape it. Make it yours.</p>
+                <h1>Generate interfaces instantly</h1>
+                <p>
+                  LLM models x Jev demo by{' '}
+                  <a
+                    href="https://x.com/hckmstrrahul"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-4 hover:text-foreground"
+                  >
+                    @hckmstrrahul
+                  </a>
+                </p>
               </div>
               <GenerationActivity
                 busy={busy}
@@ -613,13 +623,13 @@ export default function Home() {
                   <h2>
                     {live
                       ? 'Your next interface starts here'
-                      : 'A blank canvas. Your next idea.'}
-                  </h2>
-                  <p>
-                    {live
-                      ? 'Choose an example or write a prompt, then press Compose.'
                       : 'Connect OpenRouter to turn your prompt into an interface.'}
-                  </p>
+                  </h2>
+                  {live && (
+                    <p>
+                      Choose an example or write a prompt, then press Compose.
+                    </p>
+                  )}
                   {!live && (
                     <Button variant="outline" onClick={() => setSettings(true)}>
                       <KeyRound size={15} />
