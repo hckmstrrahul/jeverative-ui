@@ -177,6 +177,3 @@ body {
 .connection-error{font-size:13px;color:#b34040}
 @media(max-width:480px){.connection-dialog{padding:24px;gap:20px}.connection-choice{padding:12px;font-size:13px}}
 
-.composer-capability-note { margin: 12px auto 4px; max-width: 820px; text-align: center; color: var(--contentSecondary, #85858e); font-size: 12px; line-height: 18px; text-wrap: pretty; }
-.composer-capability-note > span { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
-.composer-capability-note svg { width: 13px; height: 13px; }

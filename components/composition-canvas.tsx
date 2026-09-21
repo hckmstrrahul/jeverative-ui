@@ -245,9 +245,9 @@ export function CompositionCanvas({
               generationMs !== undefined ? (
                 <output
                   className="preview-generation-time"
-                  aria-label={`Generated in ${(generationMs / 1000).toFixed(2)} seconds`}
+                  aria-label={`Jeverated in ${(generationMs / 1000).toFixed(2)} seconds`}
                 >
-                  {(generationMs / 1000).toFixed(2)}s
+                  Jeverated in {(generationMs / 1000).toFixed(2)}s
                 </output>
               ) : (
                 <Box size={13} />

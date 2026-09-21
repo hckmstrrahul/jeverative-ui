@@ -12,7 +12,6 @@ import type { TextUsage } from '@/lib/tree/usage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUp,
-  Info,
   KeyRound,
   Monitor,
   RotateCcw,
@@ -93,14 +92,14 @@ const examplePrompts = [
       'Design an Airbnb-style homepage feed with destination, date and guest controls, categories and six illustrated stay listings with prices, ratings and save actions.',
   },
   {
-    label: 'Custom profile',
+    label: 'Banking overview',
     prompt:
-      'Create a compact profile with identity, bio, INR and USD wallets.\nName: Rahul\nRole: Product designer\nBio: Designing thoughtful interfaces.\nINR balance: 42500\nUSD balance: 1800',
+      'Create a compact mobile banking overview with account balance, recent transactions, linked accounts and a send-money form with recipient, amount and a review step.',
   },
   {
-    label: 'Custom workspace',
+    label: 'Expense tracker',
     prompt:
-      'Create a desktop project intake form using these supplied fields. Include a save action.\n```json\n{"title":"Project intake","primaryLabel":"Save project","fields":[{"label":"Project name","value":"Mint refresh"},{"label":"Priority","type":"select","options":["Low","Medium","High"],"value":"High"},{"label":"Brief","type":"textarea"}]}\n```',
+      'Design a desktop expense tracker with a monthly spending summary, category breakdown, budget progress and a searchable transaction list. Include an add-expense action.',
   },
   {
     label: 'Profile & wallets',
@@ -586,14 +585,6 @@ export default function Home() {
                 </div>
               </div>
             </form>
-            <p className="composer-capability-note">
-              <span>
-                <Info aria-hidden="true" /> Note:
-              </span>{' '}
-              Create interface prototypes for finance, dashboards, portfolios,
-              feeds and booking with prepared components. Live data, real
-              transactions and arbitrary custom components aren’t generated.
-            </p>
             <div className="prompt-suggestions">
               {examplePrompts.map(({ label, prompt: example }) => (
                 <Button
