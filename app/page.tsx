@@ -497,7 +497,7 @@ export default function Home() {
           <section className="studio">
             <div className="studio-heading">
               <div>
-                <h1>Generate interfaces instantly</h1>
+                <h1>Jeverative Interfaces</h1>
                 <p>
                   Jev demo by{' '}
                   <a
