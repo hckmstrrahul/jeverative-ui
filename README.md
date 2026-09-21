@@ -1,67 +1,59 @@
 # Jeverative
 
-Generate interfaces from a prompt using your component library. Jeverative combines Jev decisions and styled shadcn/ui components in a responsive playground.
+A Jev-powered generative UI playground. Describe an interface and Jev selects, configures and arranges prepared components into a working preview—without a separate text-generation model in the default flow.
 
-[Open Jeverative](https://jeverative-ui.vercel.app) · [GitHub](https://github.com/hckmstrrahul/jeverative-ui)
+[Try Jeverative](https://jeverative-ui.vercel.app)
 
-## Two ways to compose
+## Jev-first: the default
 
-| | Jev-first | Hybrid |
-| --- | --- | --- |
-| Best for | Composing within the prepared library | Prompt-specific content and more open-ended interfaces |
-| Jev owns | Element selection, layout, grouping, order and supported property choices | Page arrangement, density and surfaces |
-| Content | Prepared samples or supplied fields and datasets | A text model writes content, nesting and bindings using registered components |
-| Calls | 1–2 Jev calls | 1 Jev call + 1 text call; up to 1 extra text correction |
-| Preview | Loading state, then one completed composition | Streamed drafts, followed by a validated completed screen |
-
-Neither mode creates new React components or executes generated JavaScript. Both render a validated document through the same local component adapters.
-
-### Jev-first
+Jev makes the composition decisions. A prepared library supplies styled shadcn/ui components, sample content, supported property choices and prototype interactions. Local code builds and validates the resulting interface.
 
 ```mermaid
 flowchart LR
-  A[Prompt + supplied content] --> B[Local candidate builder]
-  B --> C[Jev selects elements and layout]
-  C --> D[Jev groups, orders and configures]
-  D --> E[Local layout rules and validation]
-  E --> F[Completed preview]
+  A[Prompt + device + supplied content] --> B[Prepared component candidates]
+  B --> C[Jev selects relevant elements and layout]
+  C --> D[Jev configures, groups and orders]
+  D --> E[Local assembly and validation]
+  E --> F[Completed interactive preview]
 ```
 
-The candidate builder exposes reusable elements and semantic groups with known properties, data and actions. Jev chooses among these options; local code constructs the document and enforces responsive layout and reading order. Simple compositions can skip the second call.
+The engine batches decisions into **1–2 Jev calls**. Simple compositions can skip the second call. It selects existing components and supported values rather than generating React code or streaming a new component tree from a text model.
 
-Supplied names, copy, fields, metrics, charts and tables can replace sample content. Property configuration is bounded: Jev chooses supported values rather than inventing arbitrary props. Variations preserve selected content while changing eligible arrangements and grouping. No text model is called, including when a request is unsupported.
+**How fast?** A live desktop flight-booking generation on the production site completed in **1.18 seconds** on September 21, 2026. A separate server check completed in **1.06 seconds** with two Jev calls. These are individual observations, not a benchmark average or latency guarantee; prompt complexity, provider response time and network conditions affect results. The preview displays each run’s generation time.
 
-### Hybrid
+### What it can compose
+
+- Profiles, settings, dashboards, portfolios, planners and checkout interfaces.
+- Discovery and social feeds, composers, navigation and inbox panes.
+- Booking interfaces for flights, trains, buses, car rentals, restaurants, events and appointments.
+- Interfaces using supplied names, copy, fields, metrics, charts and tabular data.
+
+Desktop, tablet and mobile prompts adapt the preview dimensions and layout rules. Variations reuse selected content while changing eligible arrangements and property choices. During generation, the canvas shows progress before presenting the completed composition.
+
+Coverage comes from the prepared library and supplied data. Jev-first does not invent arbitrary components or unrestricted copy. Search, booking and payment controls are interactive prototypes; they do not connect to live inventory or business backends.
+
+## Hybrid: the secondary option
+
+Choose **Hybrid** in the connection modal when a request needs open-ended copy, data or component combinations beyond Jev-first’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-first.
 
 ```mermaid
 flowchart LR
-  A[Prompt + device + previous document] --> B[Jev layout plan]
-  B --> C[Local protected scaffold]
-  C --> D[Text model fills layout slots]
-  D --> E[Stream framing and local validation]
-  E --> F[Progressive preview]
-  E --> G{Complete and valid?}
-  G -->|Yes| H[Save completed screen]
-  G -->|No, auto-fix enabled| I[One targeted text correction]
-  I --> E
+  A[Prompt + device] --> B[Jev chooses page layout]
+  B --> C[Local compiler creates layout slots]
+  C --> D[Text model supplies content and component structure]
+  D --> E[Local validation + progressive preview]
+  E --> F{Valid?}
+  F -->|Yes| G[Completed interface]
+  F -->|No, auto-fix enabled| H[One targeted text-model correction]
+  H --> I[Revalidate: save or preserve previous screen]
 ```
 
-Jev chooses the page arrangement, density and surfaces. The local compiler creates protected layout nodes. The selected text model fills their slots with registered components, labels, sample data and interaction bindings.
+Jev owns the overall arrangement, density and surfaces. The selected text model fills the layout with registered components, labels, sample data and interaction bindings. It uses the same component library; it does not create new React components.
 
-Local normalization runs before paid correction. If validation still fails and **Auto-fix invalid output** is enabled, the same text model gets one targeted repair attempt. Jev is not called again. A failed attempt retains the previous completed screen; an unfinished draft is labelled. The app does not silently switch engines or upgrade models.
+Hybrid uses one Jev planning call and one text-generation call, with at most one additional text correction when enabled. Local normalization runs before paid correction. Failed generation preserves the previous completed screen. Hybrid adds text-model latency and cost; the Jev-first timings above do not describe Hybrid performance.
 
-## Shared rendering layer
+## Shared renderer and connection
 
-Both architectures call OpenRouter through server routes. Production can use the configured server-side default key; visitors may choose their own key instead. The default credential is never returned to the browser.
+Both paths render validated documents through the same React component adapters, with styling applied to typography, colors, spacing and responsive layouts. Generated interfaces use local prototype interactions and never execute model-generated JavaScript.
 
-Both architectures use registered React components, with styling applied to typography, colors, spacing and responsive layouts. Local validation checks component properties, document structure and interaction bindings before a completed screen is saved.
-
-The renderer supports desktop, tablet and mobile previews. Interactions run locally as prototypes; neither architecture creates a business backend or executes model-generated JavaScript.
-
-## Choosing an architecture
-
-**Jev-first** is for interfaces that can be expressed with the prepared component vocabulary and supplied data. It avoids text generation, but cannot invent unrestricted content or new component implementations.
-
-**Hybrid** is for requests needing more prompt-specific copy, data and component combinations. It keeps Jev’s layout plan while adding text generation and, when necessary, a bounded repair step.
-
-Compare relevance, layout, interactions, completion rate, latency and cost per usable screen. Valid output alone does not establish design quality, and the two architectures offer different levels of content flexibility.
+OpenRouter requests pass through server routes. Production connects using the configured server-side default key. **Enter your key** lets visitors use their own account instead, with optional storage on their device. The default key stays in sensitive Vercel environment variables and is never sent to the browser or committed to Git.
