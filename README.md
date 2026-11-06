@@ -1,65 +1,67 @@
 # Jeverative
 
-A Jev-powered generative UI playground. Describe an interface and Jev selects, configures and arranges prepared components into a working preview—without a separate text-generation model in the default flow.
+A generative UI playground: describe an interface, choose a device size and compose an interactive preview from a prepared component library. **Jev-only**, the default, uses Jev decisions to select and arrange components without a separate text-generation model.
 
-[Try Jeverative](https://jeverative-ui.vercel.app)
+[Try Jeverative](https://jeverative-ui.vercel.app) · [Jev-only guide](docs/JEV-FIRST.md) · [Component capabilities](docs/CONFIGURABLE-COMPONENTS.md)
 
-## Jev-only: the default
+## Run locally
 
-Jev makes the composition decisions. A prepared library supplies styled shadcn/ui components, sample content, supported property choices and prototype interactions. Local code builds and validates the resulting interface.
+Requires **Node.js 22.13+** and npm. Live generation requires an OpenRouter key, supplied in the interface or through a local environment file.
+
+```sh
+git clone https://github.com/hckmstrrahul/jeverative-ui.git
+cd jeverative-ui
+npm ci
+npm run dev
+```
+
+Open the local URL printed by the development server. Choose **Enter your key** to connect your OpenRouter account. For a server-side local default, copy `.env.example` to `.env.local`, set `OPENROUTER_API_KEY` and restart the server. Keep that file uncommitted.
+
+## Compose an interface
+
+1. Choose desktop, tablet or mobile.
+2. Describe a screen, or select an example to fill the prompt. Include the names, copy, fields or data you want to use.
+3. Select **Jev-only** or **Jev + LLM**, then choose **Compose**.
+4. Try the preview's forms and controls, or generate a variation that reuses selected content.
+
+The library covers profiles, dashboards, portfolios, planners, feeds, booking and fintech flows. Controls demonstrate local interactions and validation; they do not book travel, move money or connect to business backends.
+
+## Composition modes
+
+| Mode | How it works | Use it for |
+| --- | --- | --- |
+| **Jev-only** | One or two Jev calls select, configure, group and order prepared elements. Local code assembles and validates the result. | Interfaces supported by the prepared library and supplied content. |
+| **Jev + LLM** | Jev chooses the layout; a text model supplies content and component structure, with at most one correction when enabled. | Requests needing more open-ended copy or combinations. |
+
+Jev + LLM is an explicit choice and adds text-model usage and latency. Neither mode creates new React components or executes model-generated JavaScript. Failed generation preserves the previous completed screen. Coverage and quality depend on the available components, supplied data and provider responses.
 
 ```mermaid
 flowchart LR
-  M[Jev-only] --> A[Prompt + device + supplied content] --> B[Prepared component candidates]
-  B --> C[Jev selects relevant elements and layout]
-  C --> D[Jev configures, groups and orders]
-  D --> E[Local assembly and validation]
-  E --> F[Completed interactive preview]
+  Prompt[Prompt and device] --> Mode{Composition mode}
+  Mode -->|Jev-only| Prepared[Select and arrange prepared elements]
+  Mode -->|Jev + LLM| Content[Jev layout and text-model content]
+  Prepared --> Validate[Local validation]
+  Content --> Validate
+  Validate --> Preview[Interactive React preview]
 ```
 
-The engine batches decisions into **1–2 Jev calls**. Simple compositions can skip the second call. It selects existing components and supported values rather than generating React code or streaming a new component tree from a text model.
+## Development and hosting
 
-**How fast?** A live desktop flight-booking generation on the production site completed in **1.18 seconds** on September 21, 2026. A separate server check completed in **1.06 seconds** with two Jev calls. These are individual observations, not a benchmark average or latency guarantee; prompt complexity, provider response time and network conditions affect results. The preview displays each run’s generation time as “Jeverated in …”.
-
-### What it can compose
-
-- Profiles, settings, dashboards, portfolios, planners and checkout interfaces.
-- Stock and crypto detail pages with price charts, holdings, performance, market depth and docked Buy/Sell actions.
-- Mutual funds/SIP, banking/transfers, credit repayments, budgets, merchant invoices/settlements, insurance and identity verification prototypes.
-- Interactive fintech flows for orders, fund investments, deposits, transfers, card controls, repayments, claims, invoices, verification and expenses. Forms validate inputs, show editable reviews and simulate success, pending or failed outcomes locally.
-- Personal portfolio websites with projects, about, expertise and contact groups, separate from investment portfolios.
-- Discovery and social feeds, composers, navigation and inbox panes.
-- Booking interfaces for flights, trains, buses, car rentals, restaurants, events and appointments.
-- Interfaces using supplied names, copy, fields, metrics, charts and tabular data.
-
-Desktop, tablet and mobile prompts adapt the preview dimensions and layout rules. Variations reuse selected content while changing eligible arrangements and property choices. During generation, the canvas shows progress before presenting the completed composition.
-
-Coverage comes from the prepared library and supplied data. Jev-only does not invent arbitrary components or unrestricted copy. Search, booking and payment controls are interactive prototypes; they do not connect to live inventory or business backends.
-
-## Jev + LLM: the secondary option
-
-Choose **Jev + LLM** in the header’s composition selector when a request needs open-ended copy, data or component combinations beyond Jev-only’s prepared vocabulary. It is a manually selected fallback—not an automatic switch away from Jev-only.
-
-```mermaid
-flowchart LR
-  M[Jev + LLM] --> A[Prompt + device] --> B[Jev chooses page layout]
-  B --> C[Local compiler creates layout slots]
-  C --> D[Text model supplies content and component structure]
-  D --> E[Local validation + progressive preview]
-  E --> F{Valid?}
-  F -->|Yes| G[Completed interface]
-  F -->|No, auto-fix enabled| H[One targeted text-model correction]
-  H --> I[Revalidate: save or preserve previous screen]
+```sh
+npm test
+npm run typecheck
+npm run lint
+npm run build
 ```
 
-Jev owns the overall arrangement, density and surfaces. The selected text model fills the layout with registered components, labels, sample data and interaction bindings. It uses the same component library; it does not create new React components.
+The app uses React, Vinext/Vite and a shared renderer with styled shadcn/ui components. `npm run build` creates the Cloudflare-targeted build; `npm start` previews it with Wrangler. Vercel uses the separate `npm run build:vercel` target.
 
-Jev + LLM uses one Jev planning call and one text-generation call, with at most one additional text correction when enabled. Local normalization runs before paid correction. Failed generation preserves the previous completed screen. Jev + LLM adds text-model latency and cost; the Jev-only timings above do not describe Jev + LLM performance.
+OpenRouter calls go through server routes. A shared production key requires server-side `OPENROUTER_API_KEY` and `ALLOW_SHARED_OPENROUTER_KEY=true`; keep it in sensitive production environment variables. Visitors can override it with their own key. Never expose a default key through `NEXT_PUBLIC_*`, `VITE_*` or client code.
 
-The **About** button beside OpenRouter explains this process with a simple diagram and plain-language notes. Example prompts fill the input; **Compose** starts generation.
-
-## Shared renderer and connection
-
-Both paths render validated documents through the same React component adapters, with styling applied to typography, colors, spacing and responsive layouts. Generated interfaces use local prototype interactions and never execute model-generated JavaScript.
-
-OpenRouter requests pass through server routes. Production connects using the configured server-side default key. **Enter your key** lets visitors use their own account instead, with optional storage on their device. The default key stays in sensitive Vercel environment variables and is never sent to the browser or committed to Git.
+| Guide | Covers |
+| --- | --- |
+| [Jev-only](docs/JEV-FIRST.md) | Selection, layout rules, variations and limits. |
+| [Composition engine](docs/COMPOSITION-ENGINE.md) | Jev-directed layout, content generation and validation. |
+| [Configurable components](docs/CONFIGURABLE-COMPONENTS.md) | Supported properties and supplied content. |
+| [Fintech workflows](docs/FINTECH-WORKFLOWS.md) | Forms, review states and simulated outcomes. |
+| [Mint integration](docs/MINT-INTEGRATION.md) | Component styling and design references. |
